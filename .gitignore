@@ -43,5 +43,5 @@ vignettes/*.pdf
 *.jpeg
 
 #ignore large data files
-*.csv
+
 *.txt
