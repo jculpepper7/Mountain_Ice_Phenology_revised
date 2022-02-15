@@ -37,3 +37,11 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+#ignore plot outputs
+*.png
+*.jpeg
+
+#ignore large data files
+*.csv
+*.txt
