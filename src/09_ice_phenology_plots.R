@@ -11,52 +11,63 @@ library(plotly)
 library(Metrics)
 
 #load data
-# ice_on_full <- read_csv(here('data/combined/remote_insitu_iceOn_dates.csv'))
-# ice_off_full <- read_csv(here('data/combined/remote_insitu_iceOff_dates.csv'))
+#ice_on_full <- read_csv(here('data/combined/remote_insitu_iceOn_dates.csv'))
+#ice_off_full <- read_csv(here('data/combined/remote_insitu_iceOff_dates.csv'))
+ice_on_full <- read_csv(here('data/combined/remote_insitu_iceOn_dates_update_2022.02.15.csv'))
+ice_off_full <- read_csv(here('data/combined/remote_insitu_iceOff_dates_update_2022.02.15.csv'))
+
 # 
 # ice_on_full <- read_csv(here('data/combined/terra_insitu_iceOn_dates.csv'))
 # ice_off_full <- read_csv(here('data/combined/terra_insitu_iceOff_dates.csv'))
 
-ice_on_full <- read_csv(here('data/combined/remote_insitu_iceOn_dates_no_oko.csv'))
-ice_off_full <- read_csv(here('data/combined/remote_insitu_iceOff_dates_no_oko.csv'))
+#ice_on_full <- read_csv(here('data/combined/remote_insitu_iceOn_dates_no_oko.csv'))
+#ice_off_full <- read_csv(here('data/combined/remote_insitu_iceOff_dates_no_oko.csv'))
 
 #remove unused columns in both datasets
 
 #ice on
 ice_on_full <- ice_on_full %>%
-  select(lakename, ice_on_water_year, full_merge, ice_on_insitu, ice_on_insitu_yday) %>%
+  #select(lakename, ice_on_water_year, full_merge, ice_on_insitu, ice_on_insitu_yday) %>%
   mutate(
-    ice_on_remote_yday = yday(full_merge),
+    #ice_on_remote_yday = yday(full_merge),
+    ice_on_remote_yday = yday(date_ice_on), #for "update" data
     yday_insitu_october = ifelse(ice_on_insitu_yday >= 274, ice_on_insitu_yday - 273, ice_on_insitu_yday + 92),
     #yday_insitu_october = ifelse(year(ice_off_insitu) %% 4 == 0 & ice_off_insitu_yday > 59, yday_insitu_october + 1, yday_insitu_october),
     yday_remote_october = ifelse(ice_on_remote_yday >= 274, ice_on_remote_yday - 273, ice_on_remote_yday + 92),
-    diff_date = ice_on_insitu -full_merge,
+    #diff_date = ice_on_insitu - full_merge,
+    diff_date = ice_on_insitu - date_ice_on, #for "update" data
     diff_yday = yday_insitu_october - yday_remote_october
   ) %>%
   na.omit()
 
-rmse(ice_on_full$yday_insitu_october, ice_on_full$yday_remote_october)
-abs(mean(ice_on_full$yday_insitu_october - ice_on_full$yday_remote_october))
+rmse(ice_on_full$yday_insitu_october, ice_on_full$yday_remote_october) #37.13414   #updated error 31.99796
+mae(ice_on_full$yday_insitu_october, ice_on_full$yday_remote_october) #30.05556    #updated error 25.05797
+abs(mean(ice_on_full$yday_insitu_october - ice_on_full$yday_remote_october)) #14.05556   #updated error 2.826087
+mdae(ice_on_full$yday_insitu_october, ice_on_full$yday_remote_october) #23.63912   #updated error 18
   
 #ice off
 ice_off_full <- ice_off_full %>%
-  select(lakename, ice_off_water_year, frac_31day_med, ice_off_insitu, ice_off_insitu_yday) %>%
+  #select(lakename, ice_off_water_year, frac_31day_med, ice_off_insitu, ice_off_insitu_yday) %>%
   na.omit() %>%
   mutate(
-    ice_off_remote_yday = yday(frac_31day_med),
+    #ice_off_remote_yday = yday(frac_31day_med),
+    ice_off_remote_yday = yday(date_ice_off),  #for "update" data
     yday_insitu_october = ifelse(ice_off_insitu_yday >= 274, ice_off_insitu_yday - 273, ice_off_insitu_yday + 92),
     #yday_insitu_october = ifelse(year(ice_off_insitu) %% 4 == 0 & ice_off_insitu_yday > 59, yday_insitu_october + 1, yday_insitu_october),
     yday_remote_october = ifelse(ice_off_remote_yday >= 274, ice_off_remote_yday - 273, ice_off_remote_yday + 92),
-    diff_date = ice_off_insitu - frac_31day_med,
+    #diff_date = ice_off_insitu - frac_31day_med,
+    diff_date = ice_off_insitu - date_ice_off, #for "update" data
     diff_yday = yday_insitu_october - yday_remote_october
-  ) %>%
-  filter(yday_remote_october != 93,
-         yday_remote_october != 278,
-         yday_remote_october != 288)
+  ) #%>%
+  # filter(yday_remote_october != 93,
+  #        yday_remote_october != 278,
+  #        yday_remote_october != 288)
 
 
-mae(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october)
-abs(mean(ice_off_full$yday_insitu_october - ice_off_full$yday_remote_october))
+rmse(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october) #12.63912
+mae(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october) #8.778947
+abs(mean(ice_off_full$yday_insitu_october - ice_off_full$yday_remote_october)) #5.221053
+mdae(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october) #6
 
 #filter data to necessary columns derived from lowest mean error (see script 08)
 

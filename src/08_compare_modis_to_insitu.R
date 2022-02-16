@@ -145,57 +145,38 @@ all_remote_w_median <- all_remote_ice_data %>%
 remote_iceOn <- all_remote_w_median %>%
   filter(median_val == "full_merge") %>%
   group_by(lakename, water_year) %>%
+  filter(date > '2000-08-01') %>%
   #remove median_val as grouping variable
   mutate(median_iceFrac = rollapply(median_iceFrac, width = 21, min, align = "left", fill = NA, na.rm = TRUE)) %>%
-  #mutate(median_iceFrac = rollmedian(median_iceFrac, k = 21, min, align = "left", fill = NA, na.rm = TRUE)) %>%
-  #filter(median_iceFrac >= 0.8) %>%
   filter(median_iceFrac >= 0.8) %>%
   filter(row_number() == 1) %>%
-  #rename(ice_on_water_year = water_year) %>%
   ungroup() %>%
-  select(lakename, date_ice_on = date, water_year) #year, 
+  select(lakename, date_ice_on = date, ice_on_water_year = water_year) #year, 
   
 
 #Second, create a dataframe with ice off values
 
 remote_iceOff <- all_remote_w_median %>%
+  select(-year) %>%
   left_join(., y= remote_iceOn) %>%
   group_by(lakename, water_year) %>% #, median_val
-  filter(median_val == "full_merge_fill") %>%
+  filter(median_val == "full_merge") %>%
+  #filter(date > date_ice_on) %>%
   #filter(date > "2000-08-01") %>%
   mutate(median_iceFrac = rollapply(median_iceFrac, width = 28, max, align = "left", fill = NA, na.rm = TRUE)) %>% 
-  filter(median_iceFrac <= 0.2 & date > date_ice_on) %>%
+  filter(median_iceFrac <= 0.2 & date > date_ice_on) %>% 
   # slice(n()) %>%
   filter(row_number() == 1) %>%
   rename(date_ice_off = date) %>%
   mutate(ice_duration = date_ice_off - date_ice_on) %>%
-  select(lakename, water_year, date_ice_on, date_ice_off, ice_duration) %>%
+  select(lakename, ice_off_water_year = water_year, date_ice_on, date_ice_off, ice_duration) %>%
+  #select(lakename, water_year, date_ice_off) %>%
+  # mutate(
+  #   #ice_on_water_year = ifelse(month(date_ice_on) >= 10, year(date_ice_on)+1, year(date_ice_on)),
+  #   ice_off_water_year = ifelse(month(date_ice_off) >= 10, year(date_ice_off)+1, year(date_ice_off))
+  #   ) %>%
   # rename(ice_off_water_year = water_year) %>%
   ungroup
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#meeting with Michael - 01.05.2022
-
-new_ice <- all_remote_w_median %>%
-  group_by(lakename, water_year, median_val) %>%
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 21, min, align = "left", fill = NA, na.rm = TRUE)) %>%
-  #mutate(median_iceFrac = rollmedian(median_iceFrac, k = 21, min, align = "left", fill = NA, na.rm = TRUE)) %>%
-  #filter(median_iceFrac >= 0.8) %>%
-  filter(median_iceFrac >= 0.8) %>%
-  #filter(row_number() == 1) %>%
-  mutate(ice_on = "ice_on") %>%
-  rename(ice_on_water_year = water_year) %>%
-  ungroup
 
 #######################################################
 #######################################################
@@ -208,41 +189,67 @@ new_ice <- all_remote_w_median %>%
 #######################################################
 #######################################################
 #######################################################
+#######################################################
+
 #######################################################
 #Create new dataframes for ice on and ice off that can offer a performance stat (MAD)
 
+
+####
+#Add in situ data to remote ice phenology
+
+# all_insitu_for_merge <- all_insitu_w_water_year %>%
+#   select(lakename, ice_on_insitu, ice_off_insitu)
+# 
+# remote_insitu_merge <- remote_ice_phenology %>%
+#   select(-water_year, date_ice_on, date_ice_off) %>%
+#   left_join(all_insitu_for_merge, by = c('lakename')) %>%
+#   arrange(lakename, ice_on_water_year)
+# 
+
+
+
 #ice on dates
 remote_insitu_merge_iceOn_dates <- remote_iceOn %>%
-  select(-median_iceFrac) %>%
-  pivot_wider(names_from = median_val, values_from = date) %>%
+  #select(-median_iceFrac) %>%
+  #pivot_wider(names_from = median_val, values_from = date) %>%
   right_join(all_insitu_w_water_year, by = c("lakename", "ice_on_water_year")) %>%
-  select(-ice_off_insitu, -ice_off_insitu_yday) %>%
+  #right_join(all_insitu_w_water_year, by = c("lakename")) %>%
+  select(-ice_off_insitu, -ice_off_insitu_yday, -ice_off_water_year) %>%
   arrange(lakename, ice_on_water_year) %>%
+  na.omit()
   #select(-year.y, -year.x, -ice_off_water_year)
-  select(-year, -ice_off_water_year)
+  #select(-year, -ice_off_water_year)
+
+
+
 
 #ice off dates
 remote_insitu_merge_iceOff_dates <- remote_iceOff %>%
-  select(-median_iceFrac) %>%
-  pivot_wider(names_from = median_val, values_from = date) %>%
+  #select(-median_iceFrac) %>%
+  #pivot_wider(names_from = median_val, values_from = date) %>%
   right_join(all_insitu_w_water_year, by = c("lakename", "ice_off_water_year")) %>%
-  select(-ice_on_insitu, -ice_on_insitu_yday) %>%
+  select(-ice_on_insitu, -ice_on_insitu_yday, -ice_on_water_year) %>%
   arrange(lakename, ice_off_water_year) %>%
   #select(-year.x, -year.y, -ice_on_water_year)
-  select(-year, -ice_on_water_year)
+  #select(-year, -ice_on_water_year)
+  na.omit()
+#select(-year.y, -year.x, -ice_off_water_year)
+#select(-year, -ice_off_water_year)
+
 
 
 #Write the csvs of ice on and ice off
 
 #ice on dates
-#write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates.csv"))
+write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates_update_2022.02.15.csv"))
 #testing for 100% for ice on and 0% for ice off (excluding morskie_oko)
-write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates_no_oko.csv"))
+#write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates_no_oko.csv"))
 
 #ice off dates
-#write_csv(remote_insitu_merge_iceOff_dates, here("data/combined/remote_insitu_iceOff_dates.csv"))
+write_csv(remote_insitu_merge_iceOff_dates, here("data/combined/remote_insitu_iceOff_dates_update_2022.02.15.csv"))
 #testing for 100% for ice on and 0% for ice off (excluding morskie_oko)
-write_csv(remote_insitu_merge_iceOff_dates, here("data/combined/remote_insitu_iceOff_dates_no_oko.csv"))
+#write_csv(remote_insitu_merge_iceOff_dates, here("data/combined/remote_insitu_iceOff_dates_no_oko.csv"))
 
 #Mean Absolute Difference (MAD)-------------------------------------------------
 
