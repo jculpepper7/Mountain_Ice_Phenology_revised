@@ -58,20 +58,20 @@ all_remote_w_median <- all_remote_ice_data %>%
   #mutate(full_merge_fill = na.stinterp(full_merge)) %>%
   #mutate(full_merge_fill = na.spline(full_merge)) %>% #this fills NAs with a spline interpolation (from zoo package) (may not be appropriate, as it can move beyond 0 -1 boundaries)
   #mutate(full_merge_fill = na.locf(full_merge)) %>% #this fills NAs with the last previous non-NA (from zoo package)
-  mutate(#frac_03day_med = zoo::rollmedian(full_merge_fill, k = 3, fill = NA), #add rolling medians from 3-31 days
-         # frac_05day_med = zoo::rollmedian(full_merge_fill, k = 5, fill = NA),
-         # frac_07day_med = zoo::rollmedian(full_merge_fill, k = 7, fill = NA),
-         # frac_09day_med = zoo::rollmedian(full_merge_fill, k = 9, fill = NA),
-         # frac_11day_med = zoo::rollmedian(full_merge_fill, k = 11, fill = NA),
-         # frac_13day_med = zoo::rollmedian(full_merge_fill, k = 13, fill = NA),
-         # frac_15day_med = zoo::rollmedian(full_merge_fill, k = 15, fill = NA),
-         # frac_17day_med = zoo::rollmedian(full_merge_fill, k = 17, fill = NA),
-         # frac_19day_med = zoo::rollmedian(full_merge_fill, k = 19, fill = NA),
-         # frac_21day_med = zoo::rollmedian(full_merge_fill, k = 21, fill = NA),
-         # frac_23day_med = zoo::rollmedian(full_merge_fill, k = 23, fill = NA),
-         # frac_25day_med = zoo::rollmedian(full_merge_fill, k = 25, fill = NA),
-         # frac_27day_med = zoo::rollmedian(full_merge_fill, k = 27, fill = NA),
-         # frac_29day_med = zoo::rollmedian(full_merge_fill, k = 29, fill = NA),
+  mutate(frac_03day_med = zoo::rollmedian(full_merge_fill, k = 3, fill = NA), #add rolling medians from 3-31 days
+         frac_05day_med = zoo::rollmedian(full_merge_fill, k = 5, fill = NA),
+         frac_07day_med = zoo::rollmedian(full_merge_fill, k = 7, fill = NA),
+         frac_09day_med = zoo::rollmedian(full_merge_fill, k = 9, fill = NA),
+         frac_11day_med = zoo::rollmedian(full_merge_fill, k = 11, fill = NA),
+         frac_13day_med = zoo::rollmedian(full_merge_fill, k = 13, fill = NA),
+         frac_15day_med = zoo::rollmedian(full_merge_fill, k = 15, fill = NA),
+         frac_17day_med = zoo::rollmedian(full_merge_fill, k = 17, fill = NA),
+         frac_19day_med = zoo::rollmedian(full_merge_fill, k = 19, fill = NA),
+         frac_21day_med = zoo::rollmedian(full_merge_fill, k = 21, fill = NA),
+         frac_23day_med = zoo::rollmedian(full_merge_fill, k = 23, fill = NA),
+         frac_25day_med = zoo::rollmedian(full_merge_fill, k = 25, fill = NA),
+         frac_27day_med = zoo::rollmedian(full_merge_fill, k = 27, fill = NA),
+         frac_29day_med = zoo::rollmedian(full_merge_fill, k = 29, fill = NA),
          frac_31day_med = zoo::rollmedian(full_merge_fill, k = 31, fill = NA)) %>%
   pivot_longer(!c(lakename, date), names_to = "median_val", values_to = "median_iceFrac") %>% #change from wide to long format
   arrange(median_val) %>% #reorganize rows to group by rolling median from 3-31 rather than date
@@ -143,15 +143,16 @@ all_remote_w_median <- all_remote_ice_data %>%
 #first create a dataframe with ice on values
 
 remote_iceOn <- all_remote_w_median %>%
-  filter(median_val == "full_merge") %>%
-  group_by(lakename, water_year) %>%
+  #filter(median_val == "full_merge") %>%
+  #remove median_val as grouping variable when above filter is in use
+  group_by(lakename, water_year, median_val) %>% #, medial_val
   filter(date > '2000-08-01') %>%
-  #remove median_val as grouping variable
   mutate(median_iceFrac = rollapply(median_iceFrac, width = 21, min, align = "left", fill = NA, na.rm = TRUE)) %>%
   filter(median_iceFrac >= 0.8) %>%
   filter(row_number() == 1) %>%
-  ungroup() %>%
-  select(lakename, date_ice_on = date, ice_on_water_year = water_year) #year, 
+  rename(date_ice_on = date) %>% #remove when not going through all columns
+  ungroup() #%>%
+  #select(lakename, date_ice_on = date, water_year, median_val) #year, 
   
 
 #Second, create a dataframe with ice off values
@@ -159,11 +160,11 @@ remote_iceOn <- all_remote_w_median %>%
 remote_iceOff <- all_remote_w_median %>%
   select(-year) %>%
   left_join(., y= remote_iceOn) %>%
-  group_by(lakename, water_year) %>% #, median_val
-  filter(median_val == "full_merge") %>%
+  group_by(lakename, water_year, median_val) %>% #, median_val
+  #filter(median_val == "frac_31day_med") %>%
   #filter(date > date_ice_on) %>%
   #filter(date > "2000-08-01") %>%
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 28, max, align = "left", fill = NA, na.rm = TRUE)) %>% 
+  mutate(median_iceFrac = rollapply(median_iceFrac, width = 28, max, align = "left", fill = NA, na.rm = TRUE)) %>% #found this rollapply() solution here: https://stackoverflow.com/questions/31373256/r-selecting-first-of-n-consecutive-rows-above-a-certain-threshold-value
   filter(median_iceFrac <= 0.2 & date > date_ice_on) %>% 
   # slice(n()) %>%
   filter(row_number() == 1) %>%
@@ -211,8 +212,9 @@ remote_iceOff <- all_remote_w_median %>%
 
 #ice on dates
 remote_insitu_merge_iceOn_dates <- remote_iceOn %>%
-  #select(-median_iceFrac) %>%
-  #pivot_wider(names_from = median_val, values_from = date) %>%
+  rename(ice_on_water_year = water_year) %>%
+  select(-median_iceFrac) %>% #comment out when using one median_val
+  pivot_wider(names_from = median_val, values_from = date) %>% #comment out when using one median_val
   right_join(all_insitu_w_water_year, by = c("lakename", "ice_on_water_year")) %>%
   #right_join(all_insitu_w_water_year, by = c("lakename")) %>%
   select(-ice_off_insitu, -ice_off_insitu_yday, -ice_off_water_year) %>%
@@ -226,6 +228,8 @@ remote_insitu_merge_iceOn_dates <- remote_iceOn %>%
 
 #ice off dates
 remote_insitu_merge_iceOff_dates <- remote_iceOff %>%
+  filter(ice_duration != 1) %>%
+  select(-c(date_ice_on, ice_duration)) %>%
   #select(-median_iceFrac) %>%
   #pivot_wider(names_from = median_val, values_from = date) %>%
   right_join(all_insitu_w_water_year, by = c("lakename", "ice_off_water_year")) %>%
@@ -234,9 +238,6 @@ remote_insitu_merge_iceOff_dates <- remote_iceOff %>%
   #select(-year.x, -year.y, -ice_on_water_year)
   #select(-year, -ice_on_water_year)
   na.omit()
-#select(-year.y, -year.x, -ice_off_water_year)
-#select(-year, -ice_off_water_year)
-
 
 
 #Write the csvs of ice on and ice off

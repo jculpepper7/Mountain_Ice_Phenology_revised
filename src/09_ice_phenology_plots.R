@@ -64,10 +64,11 @@ ice_off_full <- ice_off_full %>%
   #        yday_remote_october != 288)
 
 
-rmse(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october) #12.63912
-mae(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october) #8.778947
-abs(mean(ice_off_full$yday_insitu_october - ice_off_full$yday_remote_october)) #5.221053
-mdae(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october) #6
+rmse(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october) #12.63912   #error w/ ice on in ice off algorithm: 29.98
+mae(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october) #8.778947   #error w/ ice on in ice off algorithm: 13.89
+mae(ice_off_full$ice_off_insitu, ice_off_full$date_ice_off)
+abs(mean(ice_off_full$yday_insitu_october - ice_off_full$yday_remote_october)) #5.221053  #error w/ ice on in ice off algorithm: 2.98
+mdae(ice_off_full$yday_insitu_october, ice_off_full$yday_remote_october) #6       #error w/ ice on in ice off algorithm: 7
 
 #filter data to necessary columns derived from lowest mean error (see script 08)
 
