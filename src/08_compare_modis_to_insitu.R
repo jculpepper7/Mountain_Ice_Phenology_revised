@@ -23,19 +23,26 @@ library(modelr)
 #Import in situ data
 
 #all_insitu_ice_data <- read_csv(here('data/combined/all_insitu_ice_data.csv'))
-all_insitu_w_water_year <- read_csv(here('data/combined/all_insitu_water_year.csv'))
+all_insitu_w_water_year <- read_csv(here('data/combined/all_insitu_water_year.csv')) %>%
+  mutate(
+    ice_on_insitu = mdy(ice_on_insitu),
+    ice_off_insitu = mdy(ice_off_insitu)
+  )
 
 # all_insitu_ice_data <- all_insitu_ice_data %>%
 #   rename(lakename = lake)
 
 #Import cleaned and merged remotely sensed data from script 06
 
-all_remote_ice_data <- read_csv(here("data/remote/aqua_terra_merged_clean_outlier_removed.csv"))
+all_remote_ice_data <- read_csv(here("data/remote/aqua_terra_merged_clean_outlier_removed.csv")) %>%
+  mutate(
+    lakename = tolower(lakename)
+  )
 
 #all_remote_ice_data <- read_csv(here("data/remote/terra_clean.csv"))
 #all_remote_ice_data <- read_csv(here("data/remote/aqua_clean.csv"))
 
-all_remote_ice_data$lakename <- tolower(all_remote_ice_data$lakename)
+#all_remote_ice_data$lakename <- tolower(all_remote_ice_data$lakename)
 
 # all_remote_ice_data <- all_remote_ice_data %>%
 #   filter(date > "2000-08-01") #remove dates prior to August in the year 2000, as it gives a false ice on value in March or April (from the previous years freeze event)
@@ -147,24 +154,30 @@ remote_iceOn <- all_remote_w_median %>%
   #remove median_val as grouping variable when above filter is in use
   group_by(lakename, water_year, median_val) %>% #, medial_val
   filter(date > '2000-08-01') %>%
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 21, min, align = "left", fill = NA, na.rm = TRUE)) %>%
+  mutate(median_iceFrac = rollapply(median_iceFrac, width = 2, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21
   filter(median_iceFrac >= 0.8) %>%
   filter(row_number() == 1) %>%
   rename(date_ice_on = date) %>% #remove when not going through all columns
   ungroup() #%>%
   #select(lakename, date_ice_on = date, water_year, median_val) #year, 
-  
+
+#Pruned remote_iceOn dataset for right_join() with remote_iceOff
+
+remote_ice_on_trim <- remote_iceOn %>%
+  select(lakename, date_ice_on, median_val, water_year)
+
 
 #Second, create a dataframe with ice off values
 
 remote_iceOff <- all_remote_w_median %>%
   select(-year) %>%
-  left_join(., y= remote_iceOn) %>%
+  #left_join(., y= remote_iceOn) %>%
+  left_join(., y = remote_ice_on_trim) %>%
   group_by(lakename, water_year, median_val) %>% #, median_val
   #filter(median_val == "frac_31day_med") %>%
   #filter(date > date_ice_on) %>%
   #filter(date > "2000-08-01") %>%
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 28, max, align = "left", fill = NA, na.rm = TRUE)) %>% #found this rollapply() solution here: https://stackoverflow.com/questions/31373256/r-selecting-first-of-n-consecutive-rows-above-a-certain-threshold-value
+  mutate(median_iceFrac = rollapply(median_iceFrac, width = 2, max, align = "left", fill = NA, na.rm = TRUE)) %>% #28 #found this rollapply() solution here: https://stackoverflow.com/questions/31373256/r-selecting-first-of-n-consecutive-rows-above-a-certain-threshold-value
   filter(median_iceFrac <= 0.2 & date > date_ice_on) %>% 
   # slice(n()) %>%
   filter(row_number() == 1) %>%
@@ -212,14 +225,15 @@ remote_iceOff <- all_remote_w_median %>%
 
 #ice on dates
 remote_insitu_merge_iceOn_dates <- remote_iceOn %>%
+  select(-year) %>%
   rename(ice_on_water_year = water_year) %>%
   select(-median_iceFrac) %>% #comment out when using one median_val
-  pivot_wider(names_from = median_val, values_from = date) %>% #comment out when using one median_val
-  right_join(all_insitu_w_water_year, by = c("lakename", "ice_on_water_year")) %>%
+  pivot_wider(names_from = median_val, values_from = date_ice_on) %>% #comment out when using one median_val
+  inner_join(all_insitu_w_water_year, by = c("lakename", "ice_on_water_year")) %>% #inner_join() works better than right_join(), as it does not include erroneous NA values, such as the Castle ice on dates, since we do not have Castle ice on dates.
   #right_join(all_insitu_w_water_year, by = c("lakename")) %>%
   select(-ice_off_insitu, -ice_off_insitu_yday, -ice_off_water_year) %>%
-  arrange(lakename, ice_on_water_year) %>%
-  na.omit()
+  arrange(lakename, ice_on_water_year) #%>%
+  #na.omit()
   #select(-year.y, -year.x, -ice_off_water_year)
   #select(-year, -ice_off_water_year)
 
@@ -228,27 +242,27 @@ remote_insitu_merge_iceOn_dates <- remote_iceOn %>%
 
 #ice off dates
 remote_insitu_merge_iceOff_dates <- remote_iceOff %>%
-  filter(ice_duration != 1) %>%
+  #filter(ice_duration != 1) %>%
   select(-c(date_ice_on, ice_duration)) %>%
-  #select(-median_iceFrac) %>%
-  #pivot_wider(names_from = median_val, values_from = date) %>%
-  right_join(all_insitu_w_water_year, by = c("lakename", "ice_off_water_year")) %>%
+  #select(-median_iceFrac) %>% #eliminated this column in line 178 (remote_iceOff -> select() step)
+  pivot_wider(names_from = median_val, values_from = date_ice_off) %>%
+  inner_join(all_insitu_w_water_year, by = c("lakename", "ice_off_water_year")) %>%
   select(-ice_on_insitu, -ice_on_insitu_yday, -ice_on_water_year) %>%
-  arrange(lakename, ice_off_water_year) %>%
+  arrange(lakename, ice_off_water_year) #%>%
   #select(-year.x, -year.y, -ice_on_water_year)
   #select(-year, -ice_on_water_year)
-  na.omit()
+  #na.omit()
 
 
 #Write the csvs of ice on and ice off
 
 #ice on dates
-write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates_update_2022.02.15.csv"))
+#write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates_update_2022.02.15.csv"))
 #testing for 100% for ice on and 0% for ice off (excluding morskie_oko)
 #write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates_no_oko.csv"))
 
 #ice off dates
-write_csv(remote_insitu_merge_iceOff_dates, here("data/combined/remote_insitu_iceOff_dates_update_2022.02.15.csv"))
+#write_csv(remote_insitu_merge_iceOff_dates, here("data/combined/remote_insitu_iceOff_dates_update_2022.02.15.csv"))
 #testing for 100% for ice on and 0% for ice off (excluding morskie_oko)
 #write_csv(remote_insitu_merge_iceOff_dates, here("data/combined/remote_insitu_iceOff_dates_no_oko.csv"))
 
@@ -260,12 +274,13 @@ write_csv(remote_insitu_merge_iceOff_dates, here("data/combined/remote_insitu_ic
 
 #ice on MAD
 ice_on_med_test <- remote_insitu_merge_iceOn_dates %>%
-  group_by(lakename) %>% # f you do not group by lake name, it will get the total MAE
+  #group_by(lakename) %>% # f you do not group by lake name, it will get the total MAE
   #filter(lakename != "morskie_oko") %>%
   summarise(across(
-    #.cols = 2:18, #without full_merge_fill
-    .cols = 2:5, #with full_merge_fill
-    .fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1))) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference 
+    .cols = 2:18, #without full_merge_fill
+    #.cols = 2:5, #with full_merge_fill
+    #.fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1))) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference
+    .fns = ~ mae(.x, ice_on_insitu)
   ))
 ice_on_med_test
 #ice off MAD
