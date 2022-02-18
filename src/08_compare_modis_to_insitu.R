@@ -260,12 +260,12 @@ write_csv(remote_insitu_merge_iceOff_dates, here("data/combined/remote_insitu_ic
 
 #ice on MAD
 ice_on_med_test <- remote_insitu_merge_iceOn_dates %>%
-  group_by(lakename) %>%
+  group_by(lakename) %>% # f you do not group by lake name, it will get the total MAE
   #filter(lakename != "morskie_oko") %>%
   summarise(across(
     #.cols = 2:18, #without full_merge_fill
     .cols = 2:5, #with full_merge_fill
-    .fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1)))
+    .fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1))) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference 
   ))
 ice_on_med_test
 #ice off MAD
