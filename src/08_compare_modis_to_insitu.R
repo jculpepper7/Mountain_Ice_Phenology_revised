@@ -17,6 +17,7 @@ library(here)
 library(janitor)
 library(padr)
 library(modelr)
+library(Metrics)
 
 # 1. Read in data --------------------------------------------------------------
 
@@ -274,24 +275,27 @@ remote_insitu_merge_iceOff_dates <- remote_iceOff %>%
 
 #ice on MAD
 ice_on_med_test <- remote_insitu_merge_iceOn_dates %>%
+  na.omit() %>%
   #group_by(lakename) %>% # f you do not group by lake name, it will get the total MAE
   #filter(lakename != "morskie_oko") %>%
   summarise(across(
-    .cols = 2:18, #without full_merge_fill
+    .cols = 3:20, #without full_merge_fill
     #.cols = 2:5, #with full_merge_fill
     #.fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1))) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference
-    .fns = ~ mae(.x, ice_on_insitu)
+    .fns = ~ Metrics::mdae(predicted = .x, actual = ice_on_insitu)
   ))
 ice_on_med_test
 #ice off MAD
 ice_off_med_test <- remote_insitu_merge_iceOff_dates %>%
-  group_by(lakename) %>%
+  na.omit() %>%
+  #group_by(lakename) %>%
   #filter(lakename != "morskie_oko") %>%
   summarise(across(
     #.cols = 2:18, #without full_merge_fill
-    #.cols = 2:19, #with full_merge_fill
-    .cols = 2:5,
-    .fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_off_insitu) %/% days(1)))
+    .cols = 3:20, #with full_merge_fill
+    #.cols = 2:5,
+    #.fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_off_insitu) %/% days(1)))
+    .fns = ~ Metrics::mae( predicted = .x, actual = ice_off_insitu)
   ))
 ice_off_med_test
 #get the mean values per column (across lakes)
