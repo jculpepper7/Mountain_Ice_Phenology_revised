@@ -103,7 +103,7 @@ all_remote_w_median <- all_remote_ice_data %>%
 #######################################################
 #######################################################
 
-# all_remote_w_median <- all_remote_ice_data %>%
+# all_remote_w_median_noFill <- all_remote_ice_data %>%
 #   na.omit() %>%
 #   mutate(date = ymd(date)) %>% #ensure that date is in date format
 #   select(lakename, date, full_merge) %>% #reorder columns
@@ -133,7 +133,9 @@ all_remote_w_median <- all_remote_ice_data %>%
 #          water_year = ifelse(month>=10, year+1, year)) %>% #add a water year column
 #   select(-month) %>% #remove month column (no need after making water year column)
 #   ungroup
-
+# 
+# test_noFill <- all_remote_w_median_noFill %>% #before number of rows = 607264 
+#   na.omit #after, number of rows = 24.064
 #######################################################
 #######################################################
 #######################################################
@@ -155,7 +157,7 @@ remote_iceOn <- all_remote_w_median %>%
   #remove median_val as grouping variable when above filter is in use
   group_by(lakename, water_year, median_val) %>% #, medial_val
   filter(date > '2000-08-01') %>%
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 2, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21
+  mutate(median_iceFrac = rollapply(median_iceFrac, width = 19, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21  #after looking at the MAE, MDAE, and RMSE through Metrics pkg, 19 days for width performs the best with MAE = 22, MDAE = 14, RMSE = 29.2
   filter(median_iceFrac >= 0.8) %>%
   filter(row_number() == 1) %>%
   rename(date_ice_on = date) %>% #remove when not going through all columns
@@ -165,7 +167,8 @@ remote_iceOn <- all_remote_w_median %>%
 #Pruned remote_iceOn dataset for right_join() with remote_iceOff
 
 remote_ice_on_trim <- remote_iceOn %>%
-  select(lakename, date_ice_on, median_val, water_year)
+  filter(median_val == 'full_merge') %>%
+  select(lakename, date_ice_on, water_year) #median_val, 
 
 
 #Second, create a dataframe with ice off values
@@ -177,8 +180,9 @@ remote_iceOff <- all_remote_w_median %>%
   group_by(lakename, water_year, median_val) %>% #, median_val
   #filter(median_val == "frac_31day_med") %>%
   #filter(date > date_ice_on) %>%
-  #filter(date > "2000-08-01") %>%
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 2, max, align = "left", fill = NA, na.rm = TRUE)) %>% #28 #found this rollapply() solution here: https://stackoverflow.com/questions/31373256/r-selecting-first-of-n-consecutive-rows-above-a-certain-threshold-value
+  filter(date > "2000-09-30") %>%
+  #found this rollapply() solution here: https://stackoverflow.com/questions/31373256/r-selecting-first-of-n-consecutive-rows-above-a-certain-threshold-value
+  mutate(median_iceFrac = rollapply(median_iceFrac, width = 2, max, align = "left", fill = NA, na.rm = TRUE)) %>% #28 
   filter(median_iceFrac <= 0.2 & date > date_ice_on) %>% 
   # slice(n()) %>%
   filter(row_number() == 1) %>%
@@ -277,14 +281,16 @@ remote_insitu_merge_iceOff_dates <- remote_iceOff %>%
 ice_on_med_test <- remote_insitu_merge_iceOn_dates %>%
   na.omit() %>%
   #group_by(lakename) %>% # f you do not group by lake name, it will get the total MAE
-  #filter(lakename != "morskie_oko") %>%
   summarise(across(
     .cols = 3:20, #without full_merge_fill
     #.cols = 2:5, #with full_merge_fill
     #.fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1))) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference
-    .fns = ~ Metrics::mdae(predicted = .x, actual = ice_on_insitu)
+    .fns = ~ Metrics::mae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
+    #.fns = ~ Metrics::mdae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
+    #.fns = ~ Metrics::rmse(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
   ))
 ice_on_med_test
+
 #ice off MAD
 ice_off_med_test <- remote_insitu_merge_iceOff_dates %>%
   na.omit() %>%
