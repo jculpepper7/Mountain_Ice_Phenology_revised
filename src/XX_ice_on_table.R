@@ -1,3 +1,8 @@
+library(tidyverse)
+library(ggpubr)
+library(lubridate)
+library(plotly)
+
 remote_iceOn <- all_remote_w_median %>%
   #filter(median_val == "full_merge") %>%
   #remove median_val as grouping variable when above filter is in use
@@ -26,7 +31,7 @@ ice_on_med_test <- remote_insitu_merge_iceOn_dates %>%
   summarise(across(
     .cols = 3:20, #without full_merge_fill
     #.cols = 2:5, #with full_merge_fill
-    #.fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1))) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference
+    #.fns = ~ mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1)) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference (which is absolute value of the mean bias error MBE - see Smejkalova et al., 2016)
     #.fns = ~ Metrics::mdae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
     .fns = ~ Metrics::mae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
     #.fns = ~ Metrics::rmse(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
@@ -78,7 +83,7 @@ y <- remote_insitu_merge_iceOn_dates_plt %>%
     text = element_text(size = 20),
     legend.position = "bottom"
   ) +
-  geom_smooth(method = 'lm', se = FALSE)+
+  geom_smooth(method = 'lm', se = TRUE)+
   stat_regline_equation(
     aes(label = paste(..adj.rr.label..))
   )+
