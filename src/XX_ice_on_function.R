@@ -12,15 +12,16 @@ test_output_ice_on <- data.frame()
 test_output_ice_on <- do.call(
   rbind.data.frame,
   lapply(
-    2:100,
+    14:15,
     function(i){
       remote_iceOn <- all_remote_w_median %>%
         #filter(median_val == "full_merge") %>%
         #remove median_val as grouping variable when above filter is in use
         group_by(lakename, water_year, median_val) %>% #, medial_val
         filter(date > '2000-10-01') %>% #start at 2001 water year (otherwise will have a misleading ice on in March of 2000)
-        mutate(median_iceFrac = rollapply(median_iceFrac, width = i, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21
-        filter(median_iceFrac >= 0.95) %>%
+        #mutate(median_iceFrac = rollapply(median_iceFrac, width = i, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21
+        mutate(median_iceFrac = rollapply(median_iceFrac, width = i, quantile(), align = "left", fill = NA, na.rm = TRUE)) %>%
+        filter(median_iceFrac >= 1) %>%
         filter(row_number() == 1) %>%
         rename(date_ice_on = date) %>% #remove when not going through all columns
         ungroup() #%>%
@@ -54,7 +55,7 @@ test_output_ice_on <- do.call(
 );
 
 
-write_csv(test_output_ice_on, here('data/ice_on_width_2_100_threshold_0.9.csv'))
+write_csv(test_output_ice_on, here('data/ice_on_width_2_100_threshold_1.csv'))
 
 
 
@@ -125,9 +126,13 @@ y <- do.call(
 
 
 
-
-
-
+#could do this for cloud cover. show a boxplot of cloudy days per lake. 
+#then show a boxplot of cloudy days per month per lake
+#this may also be well represented by a histogram of percent cloudy days per lake per month
+#I think this would look like a bimodal distribution, where we have high cloudy days in Jan - Mar
+#Low cloudy days in Apr - Sep, and then high cloudy days again in Oct - Dec
+ggplot(all_remote_w_median, aes(x = median_val, y = median_iceFrac, fill = median_val))+
+  geom_boxplot()
 
 
 
