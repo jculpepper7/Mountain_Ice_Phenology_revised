@@ -2,6 +2,7 @@ library(tidyverse)
 library(ggpubr)
 library(lubridate)
 library(plotly)
+library(Metrics)
 
 #below function is a combination of sources from here: https://statisticsglobe.com/avoid-for-loop-in-r
 #and here: https://stackoverflow.com/questions/31862933/storing-loop-output-in-a-dataframe-in-r (the last response on that discussion board)
@@ -12,7 +13,7 @@ test_output_ice_on <- data.frame()
 test_output_ice_on <- do.call(
   rbind.data.frame,
   lapply(
-    14:15,
+    2:100,
     function(i){
       remote_iceOn <- all_remote_w_median %>%
         #filter(median_val == "full_merge") %>%
@@ -20,8 +21,8 @@ test_output_ice_on <- do.call(
         group_by(lakename, water_year, median_val) %>% #, medial_val
         filter(date > '2000-10-01') %>% #start at 2001 water year (otherwise will have a misleading ice on in March of 2000)
         #mutate(median_iceFrac = rollapply(median_iceFrac, width = i, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21
-        mutate(median_iceFrac = rollapply(median_iceFrac, width = i, quantile(), align = "left", fill = NA, na.rm = TRUE)) %>%
-        filter(median_iceFrac >= 1) %>%
+        mutate(median_iceFrac = rollapply(median_iceFrac, width = i, median, align = "left", fill = NA, na.rm = TRUE)) %>%
+        filter(median_iceFrac >= 0.8) %>%
         filter(row_number() == 1) %>%
         rename(date_ice_on = date) %>% #remove when not going through all columns
         ungroup() #%>%
@@ -54,10 +55,23 @@ test_output_ice_on <- do.call(
   )
 );
 
+test <- test_output_ice_on %>%
+  mutate(
+    width = c(2:100)
+  ) %>%
+  select(19, 18, 1:17)
 
-write_csv(test_output_ice_on, here('data/ice_on_width_2_100_threshold_1.csv'))
+write_csv(test, here('data/ice_on__median_width_2_100_threshold_0.8.csv'))
 
 
+test2 <- test %>%
+  select(-1,-2)
+  
+min(test2)
+
+ggplot(data = test, aes(x = width, y = full_merge))+
+  geom_line(size = 2)+
+  theme_classic()
 
 
 
@@ -70,7 +84,8 @@ remote_iceOn <- all_remote_w_median %>%
   #remove median_val as grouping variable when above filter is in use
   group_by(lakename, water_year, median_val) %>% #, medial_val
   filter(date > '2000-10-01') %>% #start at 2001 water year (otherwise will have a misleading ice on in March of 2000)
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 19, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21
+  #mutate(median_iceFrac = rollapply(median_iceFrac, width = 19, quantile, align = "left", fill = NA, na.rm = TRUE)) %>% #21
+  mutate(quantile_iceFrac = rollapply(median_iceFrac, width = 90, median, align = 'left', fill = NA, na.rm = TRUE)) %>%
   filter(median_iceFrac >= 0.8) %>%
   filter(row_number() == 1) %>%
   rename(date_ice_on = date) %>% #remove when not going through all columns
@@ -93,9 +108,9 @@ ice_on_med_test <- remote_insitu_merge_iceOn_dates %>%
   summarise(across(
     .cols = 3:20, #without full_merge_fill
     #.cols = 2:5, #with full_merge_fill
-    #.fns = ~ mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1)) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference (which is absolute value of the mean bias error MBE - see Smejkalova et al., 2016)
+    .fns = ~ mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1)) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference (which is absolute value of the mean bias error MBE - see Smejkalova et al., 2016)
     #.fns = ~ Metrics::mdae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
-    .fns = ~ Metrics::mae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
+    #.fns = ~ Metrics::mae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
     #.fns = ~ Metrics::rmse(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
   ))
 ice_on_med_test
@@ -103,9 +118,13 @@ ice_on_med_test
 
 
 
+x <- all_remote_w_median %>%
+  filter(lakename == 'silver' & water_year == 2001 & median_val == 'frac_03day_med') %>%
+  mutate(
+    quant_frac = rollapply(median_iceFrac, width = 19, quantile(median_iceFrac, probs = 0.75), align = "left", fill = NA, na.rm = TRUE)
+  )
 
-
-
+quantile(x$median_iceFrac)
 
 
 y <- data.frame()

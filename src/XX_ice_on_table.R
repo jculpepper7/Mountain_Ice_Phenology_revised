@@ -8,7 +8,7 @@ remote_iceOn <- all_remote_w_median %>%
   #remove median_val as grouping variable when above filter is in use
   group_by(lakename, water_year, median_val) %>% #, medial_val
   filter(date > '2000-10-01') %>% #start at 2001 water year (otherwise will have a misleading ice on in March of 2000)
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 19, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21
+  mutate(median_iceFrac = rollapply(median_iceFrac, width = 8, median, align = "left", fill = NA, na.rm = TRUE)) %>% #21
   filter(median_iceFrac >= 0.8) %>%
   filter(row_number() == 1) %>%
   rename(date_ice_on = date) %>% #remove when not going through all columns
@@ -31,9 +31,9 @@ ice_on_med_test <- remote_insitu_merge_iceOn_dates %>%
   summarise(across(
     .cols = 3:20, #without full_merge_fill
     #.cols = 2:5, #with full_merge_fill
-    #.fns = ~ mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1)) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference (which is absolute value of the mean bias error MBE - see Smejkalova et al., 2016)
+    .fns = ~ mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1)) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference (which is absolute value of the mean bias error MBE - see Smejkalova et al., 2016)
     #.fns = ~ Metrics::mdae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
-    .fns = ~ Metrics::mae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
+    #.fns = ~ Metrics::mae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
     #.fns = ~ Metrics::rmse(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
   ))
 ice_on_med_test
@@ -70,7 +70,7 @@ y <- remote_insitu_merge_iceOn_dates_plt %>%
   #geom_smooth(aes(x = yday_insitu_october, y = yday_remote_october))+
   theme_classic()+
   theme_classic()+
-  #ylim(c(0,366))+
+  #ylim(c(0,200))+
   #xlim(c(0,366))+
   #scale_shape_manual("Lake:", values = c(15,16,17,18))+
   scale_shape_manual("Lake:", values = c(21,22,23,24,25))+
@@ -83,14 +83,15 @@ y <- remote_insitu_merge_iceOn_dates_plt %>%
     text = element_text(size = 20),
     legend.position = "bottom"
   ) +
-  geom_smooth(method = 'lm', se = TRUE)+
-  stat_regline_equation(
-    aes(label = paste(..adj.rr.label..))
-  )+
-  ggtitle('Ice On (width = 19 days); MAE = 22 days')
+  #geom_smooth(method = 'lm', se = TRUE)+
+  #stat_regline_equation(
+    #aes(label = paste(..adj.rr.label..))
+  #)+
+  ggtitle('Ice On (width = 19 days); MAE = 22.85 days; MBE = -11.91')
+y
 #facet_wrap(~median_val + ice_off_water_year)
 #one_to_one_iceoff
 ggplotly(y)
 
-ggsave(here('output/ice_on_width_19days.png'), dpi = 500, width = 15, height = 9)
+ggsave(here('output/ice_on_median_width_8days.png'), dpi = 500, width = 15, height = 9)
 

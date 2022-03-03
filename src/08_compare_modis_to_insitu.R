@@ -157,7 +157,7 @@ remote_iceOn <- all_remote_w_median %>%
   #remove median_val as grouping variable when above filter is in use
   group_by(lakename, water_year, median_val) %>% #, medial_val
   filter(date > '2000-08-01') %>%
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 19, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21  #after looking at the MAE, MDAE, and RMSE through Metrics pkg, 19 days for width performs the best with MAE = 22, MDAE = 14, RMSE = 29.2
+  mutate(median_iceFrac = rollapply(median_iceFrac, width = 8, median, align = "left", fill = NA, na.rm = TRUE)) %>% #21  #after looking at the MAE, MDAE, and RMSE through Metrics pkg, 19 days for width performs the best with MAE = 22, MDAE = 14, RMSE = 29.2
   filter(median_iceFrac >= 0.8) %>%
   filter(row_number() == 1) %>%
   rename(date_ice_on = date) %>% #remove when not going through all columns

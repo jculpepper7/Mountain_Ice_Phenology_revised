@@ -13,7 +13,7 @@ remote_iceOff <- all_remote_w_median %>%
   group_by(lakename, water_year, median_val) %>% #, median_val #water_year
   #filter(date > "2000-09-30") %>%
   #found this rollapply() solution here: https://stackoverflow.com/questions/31373256/r-selecting-first-of-n-consecutive-rows-above-a-certain-threshold-value
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 97, max, align = "left", fill = NA, na.rm = TRUE)) %>% #28 
+  mutate(median_iceFrac = rollapply(median_iceFrac, width = 97, median, align = "left", fill = NA, na.rm = TRUE)) %>% #28 
   filter(median_iceFrac <= 0.2 & date > date_ice_on) %>% #& date > date_ice_on
   filter(row_number() == 1) %>%
   rename(date_ice_off = date) %>%
@@ -26,18 +26,21 @@ remote_insitu_merge_iceOff_dates <- remote_iceOff %>%
   pivot_wider(names_from = median_val, values_from = date_ice_off) %>%
   inner_join(all_insitu_w_water_year, by = c("lakename", "ice_off_water_year")) %>%
   select(-ice_on_insitu, -ice_on_insitu_yday, -ice_on_water_year) %>%
-  arrange(lakename, ice_off_water_year) #%>%
+  arrange(lakename, ice_off_water_year) %>%
+  mutate(
+    diff = frac_31day_med - ice_off_insitu
+  )
   #na.omit()
-
+mean(remote_insitu_merge_iceOff_dates$diff, na.rm = TRUE)
 ############################
-mae_90 <- remote_insitu_merge_iceOff_dates %>%
+mae_97 <- remote_insitu_merge_iceOff_dates %>%
   na.omit() %>%
   summarise(across(
     .cols = 3:20, #with full_merge_fill
     .fns = ~ Metrics::mae( predicted = as.numeric(.x), actual = as.numeric(ice_off_insitu))
   )) %>%
   mutate(
-    width = '90 day'
+    width = '97 day'
   ) %>%
 select(19, 1:18)
 #ice_off_med_test
@@ -114,6 +117,20 @@ remote_insitu_merge_iceOff_dates_plt <- remote_iceOff %>%
   slice(-63) #%>%
   #na.omit()
 
+all_remote_w_median %>%
+  filter(
+    median_val == 'full_merge' & lakename == 'albion' & year == c(2011:2016)
+  ) %>%
+ggplot( mapping = aes(x = date, y = median_iceFrac))+
+  geom_hline(yintercept = 0.8, linetype = 'dashed')+
+  geom_line(size = 1.5, color = "#56B4E9")+
+  theme_classic()+
+  ylab('Ice Fraction')+
+  xlab('Year')+
+  theme(text = element_text(size = 25))
+
+ggsave(here('output/example_ice_fraction.png'), dpi = 500, width = 15, height = 10)
+
 #mae(predicted = as.numeric(remote_insitu_merge_iceOff_dates_plt$date_ice_off), actual = as.numeric(remote_insitu_merge_iceOff_dates_plt$ice_off_insitu))
 
 x <- remote_insitu_merge_iceOff_dates_plt %>%
@@ -135,8 +152,8 @@ ggplot(aes(x = yday_insitu_october, y = yday_remote_october))+ #data = remote_in
   #geom_smooth(aes(x = yday_insitu_october, y = yday_remote_october))+
   theme_classic()+
   theme_classic()+
-  #ylim(c(0,366))+
-  #xlim(c(0,366))+
+  #ylim(c(90,300))+
+  #xlim(c(90,300))+
   #scale_shape_manual("Lake:", values = c(15,16,17,18))+
   scale_shape_manual("Lake:", values = c(21,22,23,24,25))+
   scale_fill_viridis_d("Lake:", direction = -1)+
@@ -148,12 +165,13 @@ ggplot(aes(x = yday_insitu_october, y = yday_remote_october))+ #data = remote_in
     text = element_text(size = 20),
     legend.position = "bottom"
   ) +
-  geom_smooth(method = 'lm', se = FALSE)+
-  stat_regline_equation(
-    aes(label = paste(..adj.rr.label..))
-  )+
-  ggtitle('Ice Off with Ice On Filter (width = 97 days); MAE = 8.42 days')
+  #geom_smooth(method = 'lm', se = TRUE)+
+  #stat_regline_equation(
+    #aes(label = paste(..adj.rr.label..))
+ # )+
+  ggtitle('Ice Off with Ice On Filter (width = 97 days); MAE = 8.42 days; MBE = 2.4 days')
   #facet_wrap(~median_val + ice_off_water_year)
+x
 #one_to_one_iceoff
 ggplotly(x)
 
