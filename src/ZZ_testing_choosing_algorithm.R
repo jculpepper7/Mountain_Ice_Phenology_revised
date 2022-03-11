@@ -64,3 +64,17 @@ ice_off_test <- data1 %>%
 #It may be that we can only get at ice off...which would not be ideal.
 #Also look to see if you can add an NA for a year where an ice on is not chosen.
 
+data <- tibble(
+  date = c(seq(from = ymd('2022-01-01'), to = ymd('2022-01-15'), by = 'days')),
+  value = c(1,1,'NA','NA','NA','NA','NA', 'NA', 'NA', 'NA', 0, 'NA', 1, 'NA', 'NA')
+)
+
+expected_data <- tibble(
+  date = c(seq(from = ymd('2022-01-01'), to = ymd('2022-01-15'), by = 'days')),
+  value = c(1,1,'NA','NA','NA','NA','NA', 'NA', 'NA', 'NA', 0, 'NA', 1, 'NA', 'NA'),
+  date_difference = c('NA', '1 days', '1 days', '2 days', '3 days', '4 days', 
+                      '5 days', '6 days', '7 days', '8 days', '9 days', '1 days', '2 days', '1 days', '2 days')
+)
+
+
+
