@@ -154,15 +154,23 @@ all_remote_w_median <- all_remote_ice_data %>%
 
 remote_iceOn <- all_remote_w_median %>%
   #filter(median_val == "full_merge") %>%
+  filter(median_val == "full_merge" ) %>% #for test of Inf values #& lakename == 'albion'
   #remove median_val as grouping variable when above filter is in use
   group_by(lakename, water_year, median_val) %>% #, medial_val
-  filter(date > '2000-08-01') %>%
-  mutate(median_iceFrac = rollapply(median_iceFrac, width = 8, median, align = "left", fill = NA, na.rm = TRUE)) %>% #21  #after looking at the MAE, MDAE, and RMSE through Metrics pkg, 19 days for width performs the best with MAE = 22, MDAE = 14, RMSE = 29.2
-  filter(median_iceFrac >= 0.8) %>%
-  filter(row_number() == 1) %>%
+  filter(date > '2000-09-30') %>%
+  #mutate(median_iceFrac = rollapply(median_iceFrac, width = 19, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21  #after looking at the MAE, MDAE, and RMSE through Metrics pkg, 19 days for width performs the best with MAE = 22, MDAE = 14, RMSE = 29.2
+  #filter(median_iceFrac >= 0.8) %>%
+  slice_max(median_iceFrac >= 0.8, with_ties = FALSE) %>%
+  #filter(row_number() == 1) %>%
   rename(date_ice_on = date) %>% #remove when not going through all columns
   ungroup() #%>%
   #select(lakename, date_ice_on = date, water_year, median_val) #year, 
+
+
+look <- all_remote_w_median %>%
+  filter(lakename == 'albion' & median_val == 'full_merge')
+
+
 
 #Pruned remote_iceOn dataset for right_join() with remote_iceOff
 
@@ -262,7 +270,7 @@ remote_insitu_merge_iceOff_dates <- remote_iceOff %>%
 #Write the csvs of ice on and ice off
 
 #ice on dates
-#write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates_update_2022.02.15.csv"))
+write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates_update_2022.03.11.csv"))
 #testing for 100% for ice on and 0% for ice off (excluding morskie_oko)
 #write_csv(remote_insitu_merge_iceOn_dates, here("data/combined/remote_insitu_iceOn_dates_no_oko.csv"))
 
@@ -282,8 +290,8 @@ ice_on_med_test <- remote_insitu_merge_iceOn_dates %>%
   na.omit() %>%
   #group_by(lakename) %>% # f you do not group by lake name, it will get the total MAE
   summarise(across(
-    .cols = 3:20, #without full_merge_fill
-    #.cols = 2:5, #with full_merge_fill
+    #.cols = 3:20, #without full_merge_fill
+    .cols = 3:4, #with full_merge_fill
     #.fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1))) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference
     .fns = ~ Metrics::mae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
     #.fns = ~ Metrics::mdae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))

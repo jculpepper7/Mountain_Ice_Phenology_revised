@@ -13,7 +13,7 @@ library(Metrics)
 #load data
 #ice_on_full <- read_csv(here('data/combined/remote_insitu_iceOn_dates.csv'))
 #ice_off_full <- read_csv(here('data/combined/remote_insitu_iceOff_dates.csv'))
-ice_on_full <- read_csv(here('data/combined/remote_insitu_iceOn_dates_update_2022.02.15.csv'))
+ice_on_full <- read_csv(here('data/combined/remote_insitu_iceOn_dates_update_2022.03.11.csv'))
 ice_off_full <- read_csv(here('data/combined/remote_insitu_iceOff_dates_update_2022.02.15.csv'))
 
 # 
