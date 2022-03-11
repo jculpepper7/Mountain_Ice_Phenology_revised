@@ -156,11 +156,13 @@ remote_iceOn <- all_remote_w_median %>%
   #filter(median_val == "full_merge") %>%
   filter(median_val == "full_merge" ) %>% #for test of Inf values #& lakename == 'albion'
   #remove median_val as grouping variable when above filter is in use
-  group_by(lakename, water_year, median_val) %>% #, medial_val
+  group_by(lakename, water_year) %>% #, medial_val
   filter(date > '2000-09-30') %>%
-  #mutate(median_iceFrac = rollapply(median_iceFrac, width = 19, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21  #after looking at the MAE, MDAE, and RMSE through Metrics pkg, 19 days for width performs the best with MAE = 22, MDAE = 14, RMSE = 29.2
   #filter(median_iceFrac >= 0.8) %>%
+  #mutate(median_iceFrac = rollapply(median_iceFrac, width = 19, min, align = "left", fill = NA, na.rm = TRUE)) %>% #21  #after looking at the MAE, MDAE, and RMSE through Metrics pkg, 19 days for width performs the best with MAE = 22, MDAE = 14, RMSE = 29.2
+  #filter(median_iceFrac >= 0.8) %>% #when using slice_min() (below) uncomment this line
   slice_max(median_iceFrac >= 0.8, with_ties = FALSE) %>%
+  #slice_min(date) %>% #instead of slice_max() above?
   #filter(row_number() == 1) %>%
   rename(date_ice_on = date) %>% #remove when not going through all columns
   ungroup() #%>%
@@ -240,7 +242,7 @@ remote_iceOff <- all_remote_w_median %>%
 remote_insitu_merge_iceOn_dates <- remote_iceOn %>%
   select(-year) %>%
   rename(ice_on_water_year = water_year) %>%
-  select(-median_iceFrac) %>% #comment out when using one median_val
+  #select(-median_iceFrac) %>% #comment out when using one median_val
   pivot_wider(names_from = median_val, values_from = date_ice_on) %>% #comment out when using one median_val
   inner_join(all_insitu_w_water_year, by = c("lakename", "ice_on_water_year")) %>% #inner_join() works better than right_join(), as it does not include erroneous NA values, such as the Castle ice on dates, since we do not have Castle ice on dates.
   #right_join(all_insitu_w_water_year, by = c("lakename")) %>%
