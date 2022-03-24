@@ -19,7 +19,11 @@ library(padr)
 
 # import raw remote data from GEE
 
-all_remote <- read_csv(here('data/combined/modis_allLakes_output_Terra_aqua_merged_raw.csv'))
+all_remote <- read_csv(here('data/combined/modis_allLakes_output_Terra_Aqua_merged_raw.csv')) %>%
+  filter(lakename %in% c("Albion", "Castle", "Lunz", "Morskie_Oko", "Muressan", "Silver"))
+all_nor_lakes <- read_csv(here('data/combined/modis_norwegian_lakes.csv')) 
+
+all_remote <- bind_rows(all_remote, all_nor_lakes)
 
 # 2. Merge Aqua and Terra data--------------------------------------------------
 
@@ -29,8 +33,8 @@ separate_aqua_terra <- all_remote %>%
   #improves column names from GEE output
   clean_names() %>%
   #Focusing on these lakes for now
-  filter(lakename %in% c("Albion", "Castle", "Lunz", "Morskie_Oko", "Silver")) %>%
-  filter(cloud_modis < 0.2) %>%
+  #filter(lakename %in% c("Albion", "Castle", "Lunz", "Morskie_Oko", "Muressan", "Silver")) %>%
+  filter(cloud_modis < 0.1) %>%
   #pivot wider and give h, cloud, and ice variables their own columns with pivot wider
   pivot_wider(names_from = source, names_sep = ".", values_from = c(ice_modis, cloud_modis, h)) 
 

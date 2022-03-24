@@ -18,6 +18,7 @@ library(janitor)
 library(padr)
 library(modelr)
 library(viridis)
+library(zyp) #look into this for trend tests (see Smejkalova et al., 2021 - Arctic lakes show strong decadal trend in earlier spring ice-out)
 #for spatial plots
 library(ggmap)
 library(usmap)

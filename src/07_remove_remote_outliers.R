@@ -25,7 +25,7 @@ library(janitor)
 
 # import raw remote data from GEE
 
-all_remote <- read_csv(here('data/combined/modis_allLakes_output_Terra_aqua_merged_raw.csv'))
+all_remote <- read_csv(here('data/combined/modis_allLakes_output_Terra_Aqua_merged_raw.csv'))
 
 # 2. Plot raw data-----------------------------------------------------------
 
@@ -41,7 +41,7 @@ remote_raw_plt <-
         plot.title = element_text(hjust = 0.5),
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
   labs(colour = "")
-
+remote_raw_plt
 # 3. Algorithm to remove outliers-----------------------------------------------
 
 # 3a - d. Eliminate outliers----------------------------------------------------
@@ -53,14 +53,15 @@ all_remote <- all_remote %>%
   mutate(diff_ice_modis = c(NA,diff(ice_modis)),
          diff_nonzero = ifelse(diff_ice_modis!=0, TRUE, FALSE),
          ice_modis_new = ifelse(diff_nonzero == TRUE & dplyr::lag(ice_modis)==dplyr::lead(ice_modis), lag(ice_modis), ice_modis)) %>%
-  ungroup
+  ungroup %>%
+  na.omit()
 
 
 # 4. Plot cleaned ice fraction--------------------------------------------------
 
 remote_cleaned_plt <- 
   ggplot(data = all_remote, mapping = aes(x = date, y = ice_modis_new)) + 
-  geom_line(size = 2, aes(color = lakename)) +
+  geom_line(size = 2) +
   xlab("Date") +
   ylab("Ice Fraction (%)") +
   ggtitle("Cleaned Ice Fraction") +
@@ -69,7 +70,7 @@ remote_cleaned_plt <-
   theme(text = element_text(size = 35),
         plot.title = element_text(hjust = 0.5)) +
   labs(colour = "")
-
+remote_cleaned_plt
 #ggplotly(remote_cleaned_plt)
 
 #take a look at the raw and cleaned datasets using 'patchwork' package

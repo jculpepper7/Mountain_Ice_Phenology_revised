@@ -29,7 +29,7 @@ separate_aqua_terra <- all_remote %>%
   #improves column names from GEE output
   clean_names() %>%
   #Focusing on these lakes for now
-  filter(lakename %in% c("Albion", "Castle", "Lunz", "Morskie_Oko", "Silver")) %>%
+  filter(lakename %in% c("Albion", "Castle", "Lunz", "Morskie_Oko", "Silver", "Muressan")) %>%
   filter(cloud_modis < 0.2) %>%
   #pivot wider and give h, cloud, and ice variables their own columns with pivot wider
   pivot_wider(names_from = source, names_sep = ".", values_from = c(ice_modis, cloud_modis, h)) 
@@ -139,7 +139,7 @@ modis_full_merge %>%
 
 # 3. Create cleaned, merged csv for further analysis----------------------------
 
-write_csv(modis_full_merge, here("data/remote/aqua_terra_merged_clean.csv"))
+write_csv(modis_full_merge, here("data/remote/aqua_terra_merged_clean_insitu.csv"))
 
 
 

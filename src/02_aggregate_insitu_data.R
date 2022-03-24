@@ -16,11 +16,15 @@ library(here)
 
 # 1. Read in data ------------------------------------------------------
 
-albion <- read_csv(here("data/albion/albion_in_situ.csv"))
-castle <- read_csv(here("data/castle/castle_in_situ.csv"))
-lunz <- read_csv(here("data/lunz/lunz_in_situ.csv"))
-morskie_oko <- read_csv(here("data/morskie_oko/morskie_oko_in_situ.csv"))
-silver <- read_csv(here("data/silver/silver_in_situ.csv"))
+# For data download location and data citations see script 00_get_ice_data
+
+albion <- read_csv(here("data/in_situ/albion_in_situ.csv"))
+castle <- read_csv(here("data/in_situ/castle_in_situ.csv"))
+lunz <- read_csv(here("data/in_situ/lunz_in_situ.csv"))
+morskie_oko <- read_csv(here("data/in_situ/morskie_oko_in_situ.csv"))
+silver <- read_csv(here("data/in_situ/silver_in_situ.csv"))
+san_murezzan <- read_csv(here("data/in_situ/murezzan_in_situ.csv"))
+norwegian_lakes <- read_csv(here("data/in_situ/Data_for_publication-Dryad.csv"))
 
 # 2. Make data frames uniform ------------------------------------------
 
@@ -43,15 +47,21 @@ head(albion_insitu)
 
 castle_insitu <- castle %>%
   clean_names() %>%
-  rename(ice_off_insitu_yday = ice_off) %>%
+  rename(ice_off_insitu_yday = ice_off,
+         ice_on_insitu_yday = ice_on) %>%
   mutate(ice_off_insitu = make_date(year) + ice_off_insitu_yday - 1, #add the actual date rather than just the day of year
+         ice_on_insitu = make_date(year) + ice_on_insitu_yday - 1,
          lake = c("castle")) %>%  #add the ordinal day for ice off
   select(-name) %>% #remove unnecessary column
-  select(lake, year, ice_off_insitu, ice_off_insitu_yday) %>% #reorder columns to be uniform with other dataframes
+  select(lake, year, ice_on_insitu, ice_off_insitu, ice_on_insitu_yday, ice_off_insitu_yday) %>% #reorder columns to be uniform with other dataframes
   filter(year >= 2000) #filter out rows that cannot be used in analysis (MODIS only dates back to 2000)
   
 #Take a look
 head(castle_insitu)
+
+#issue with ice on value for 1/6/2018. Should be 1/6/2019. 
+#will change it manually
+castle_insitu[19,3] = as.Date('2019-01-06')
 
 # ----------------------------------------------------------------------
 
@@ -100,9 +110,55 @@ silver_insitu <- silver %>%
 #Take a look
 head(silver_insitu)
 
+# ----------------------------------------------------------------------
+
+# Clean Murezzan data
+
+#replace -999 with NA
+san_murezzan[san_murezzan == -999] <- NA
+
+san_murezzan_insitu <- san_murezzan %>%
+  clean_names() %>%
+  filter(iceoff_year >= 2000) %>%
+  arrange(iceoff_year) %>%
+  mutate(
+    lakename = 'san_murezzan',
+    ice_on_insitu = make_date(year = iceon_year, month = iceon_month, day = iceon_day),
+    ice_off_insitu = make_date(year = iceoff_year, month = iceoff_month, day = iceoff_day),
+    ice_on_insitu_yday = yday(ice_on_insitu),
+    ice_off_insitu_yday = yday(ice_off_insitu),
+    year = season + 1
+  ) %>%
+  select(lake = lakename, year, ice_on_insitu, ice_off_insitu, ice_on_insitu_yday, ice_off_insitu_yday)
+
+# ----------------------------------------------------------------------
+
+# Clean data from Norwegian lakes 
+
+nor_lakes <- norwegian_lakes %>%
+  clean_names() %>%
+  select(
+    lake, 
+    elevation = altitude_m_asl, 
+    area_km2, 
+    impounded, 
+    year, 
+    ice_off_insitu_yday = break_up, 
+    ice_on_insitu_yday = freeze_up
+  ) %>%
+  filter(elevation >= 1000 & area_km2 >= 0.1 & year >= 2000) %>%
+  mutate(
+    ice_off_insitu = parse_date_time(paste(year, ice_off_insitu_yday), orders = 'yj'), #This line (and next) takes the ordinal day and converts it to the date
+    ice_on_insitu = parse_date_time(paste(year, ice_on_insitu_yday), orders = 'yj') #see solution from 'rrr' here: https://stackoverflow.com/questions/41030937/is-there-an-inverse-of-the-yday-lubridate-function
+  ) %>%
+  select(lake, year, ice_on_insitu, ice_off_insitu, ice_on_insitu_yday, ice_off_insitu_yday)
+
+
+
+
 # 3. Bind separate data frames ------------------------------------------
 
-all_insitu_ice_data <- bind_rows(albion_insitu, castle_insitu, lunz_insitu, morskie_oko_insitu, silver_insitu)
+all_insitu_ice_data <- bind_rows(albion_insitu, castle_insitu, lunz_insitu, morskie_oko_insitu, silver_insitu, san_murezzan_insitu, nor_lakes)
 
 # 4. Add water year to both the ice on and ice off dates
 

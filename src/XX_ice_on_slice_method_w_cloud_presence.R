@@ -1,4 +1,5 @@
-
+library(tidyverse)
+library(plotly)
 
 #add the cloudy data to the slice() detectino method
 
@@ -40,6 +41,7 @@ ice_on_w_cloud_presence <- remote_insitu_merge_iceOn_dates %>%
     yday_remote_october = ifelse(yday(full_merge) >= 274, yday(full_merge) - 273, yday(full_merge) + 92)
   )
 
+write_csv(ice_on_w_cloud_presence, file = here('data/combined/ice_on_w_cloud_presence.csv'))
 
 slice_iceOn_5day_plt <- ice_on_w_cloud_presence[ice_on_w_cloud_presence$obs_5days == TRUE,]
 
@@ -149,7 +151,7 @@ ice_on_slice_15day <- ggplot(data = slice_iceOn_15day_plt)+
   #stat_regline_equation(
   #aes(label = paste(..adj.rr.label..))
   #)+
-  ggtitle('Ice On (Obs w/in 15 days, n = 96); MAE = 23.53 days; MBE = -4.29days')
+  ggtitle('Ice On (Obs w/in 15 days, n = 70); MAE = 23.53 days; MBE = -4.29days')
 ice_on_slice_15day
 
 ggplotly(ice_on_slice_15day)

@@ -18,6 +18,7 @@ library(janitor)
 library(padr)
 library(modelr)
 library(Metrics)
+library(stats)
 
 # 1. Read in data --------------------------------------------------------------
 
@@ -31,23 +32,12 @@ all_insitu_w_water_year <- read_csv(here('data/combined/all_insitu_water_year.cs
     lakename = tolower(lakename)
   )
 
-# all_insitu_ice_data <- all_insitu_ice_data %>%
-#   rename(lakename = lake)
-
 #Import cleaned and merged remotely sensed data from script 06
 
 all_remote_ice_data <- read_csv(here("data/remote/aqua_terra_merged_clean_outlier_removed.csv")) %>%
   mutate(
     lakename = tolower(lakename)
   )
-
-#all_remote_ice_data <- read_csv(here("data/remote/terra_clean.csv"))
-#all_remote_ice_data <- read_csv(here("data/remote/aqua_clean.csv"))
-
-#all_remote_ice_data$lakename <- tolower(all_remote_ice_data$lakename)
-
-# all_remote_ice_data <- all_remote_ice_data %>%
-#   filter(date > "2000-08-01") #remove dates prior to August in the year 2000, as it gives a false ice on value in March or April (from the previous years freeze event)
 
 # 2. Detect ice phenology from median values -----------------------------------
 
@@ -62,11 +52,9 @@ all_remote_w_median <- all_remote_ice_data %>%
   mutate(date = ymd(date)) %>% #ensure that date is in date format
   select(lakename, date, full_merge) %>% #reorder columns
   group_by(lakename) %>%
-  pad() %>% #insert missing observations by day
-  mutate(full_merge_fill = na.approx(full_merge)) %>% #this fills NAs with a linear interpolation (from zoo package)
-  #mutate(full_merge_fill = na.stinterp(full_merge)) %>%
-  #mutate(full_merge_fill = na.spline(full_merge)) %>% #this fills NAs with a spline interpolation (from zoo package) (may not be appropriate, as it can move beyond 0 -1 boundaries)
-  #mutate(full_merge_fill = na.locf(full_merge)) %>% #this fills NAs with the last previous non-NA (from zoo package)
+  #pad() %>% #insert missing observations by day
+  mutate(#full_merge_fill = na.approx(full_merge),
+         cubic_spline_fill = smooth.spline(full_merge)) %>% #this fills NAs with a cubic spline interpolation (from stats package)
   mutate(frac_03day_med = zoo::rollmedian(full_merge_fill, k = 3, fill = NA), #add rolling medians from 3-31 days
          frac_05day_med = zoo::rollmedian(full_merge_fill, k = 5, fill = NA),
          frac_07day_med = zoo::rollmedian(full_merge_fill, k = 7, fill = NA),
@@ -97,58 +85,7 @@ all_remote_w_median <- all_remote_ice_data %>%
 #######################################################
 #######################################################
 #######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
 
-# all_remote_w_median_noFill <- all_remote_ice_data %>%
-#   na.omit() %>%
-#   mutate(date = ymd(date)) %>% #ensure that date is in date format
-#   select(lakename, date, full_merge) %>% #reorder columns
-#   group_by(lakename) %>%
-#   pad() %>% #insert missing observations by day
-#   #mutate(full_merge_fill = na.approx(full_merge)) %>% #try full_merge_fill_linear
-#   #full_merge_fill_loess = na.loess
-#   mutate(frac_03day_med = zoo::rollmedian(full_merge, k = 3, fill = NA), #add rolling medians from 3-31 days
-#          frac_05day_med = zoo::rollmedian(full_merge, k = 5, fill = NA),
-#          frac_07day_med = zoo::rollmedian(full_merge, k = 7, fill = NA),
-#          frac_09day_med = zoo::rollmedian(full_merge, k = 9, fill = NA),
-#          frac_11day_med = zoo::rollmedian(full_merge, k = 11, fill = NA),
-#          frac_13day_med = zoo::rollmedian(full_merge, k = 13, fill = NA),
-#          frac_15day_med = zoo::rollmedian(full_merge, k = 15, fill = NA),
-#          frac_17day_med = zoo::rollmedian(full_merge, k = 17, fill = NA),
-#          frac_19day_med = zoo::rollmedian(full_merge, k = 19, fill = NA),
-#          frac_21day_med = zoo::rollmedian(full_merge, k = 21, fill = NA),
-#          frac_23day_med = zoo::rollmedian(full_merge, k = 23, fill = NA),
-#          frac_25day_med = zoo::rollmedian(full_merge, k = 25, fill = NA),
-#          frac_27day_med = zoo::rollmedian(full_merge, k = 27, fill = NA),
-#          frac_29day_med = zoo::rollmedian(full_merge, k = 29, fill = NA),
-#          frac_31day_med = zoo::rollmedian(full_merge, k = 31, fill = NA)) %>%
-#   pivot_longer(!c(lakename, date), names_to = "median_val", values_to = "median_iceFrac") %>% #change from wide to long format
-#   arrange(median_val) %>% #reorganize rows to group by rolling median from 3-31 rather than date
-#   mutate(year = year(date), #add year column
-#          month = month(date), #add month column to make a water year column
-#          water_year = ifelse(month>=10, year+1, year)) %>% #add a water year column
-#   select(-month) %>% #remove month column (no need after making water year column)
-#   ungroup
-# 
-# test_noFill <- all_remote_w_median_noFill %>% #before number of rows = 607264 
-#   na.omit #after, number of rows = 24.064
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
-#######################################################
 # 2b. Detect ice phenology from median values -------------------------------
 
 #first create a dataframe with ice on values
@@ -167,7 +104,7 @@ remote_iceOn <- all_remote_w_median %>%
   #filter(row_number() == 1) %>%
   rename(date_ice_on = date) %>% #remove when not going through all columns
   ungroup() #%>%
-  #select(lakename, date_ice_on = date, water_year, median_val) #year, 
+#select(lakename, date_ice_on = date, water_year, median_val) #year, 
 
 
 look <- all_remote_w_median %>%
@@ -193,10 +130,12 @@ remote_iceOff <- all_remote_w_median %>%
   #filter(date > date_ice_on) %>%
   filter(date > "2000-09-30") %>%
   #found this rollapply() solution here: https://stackoverflow.com/questions/31373256/r-selecting-first-of-n-consecutive-rows-above-a-certain-threshold-value
+  #Next three lines(mutate()...filter()...filter()...) are the original method that i used to detect ice off
   mutate(median_iceFrac = rollapply(median_iceFrac, width = 2, max, align = "left", fill = NA, na.rm = TRUE)) %>% #28 
-  filter(median_iceFrac <= 0.2 & date > date_ice_on) %>% 
-  # slice(n()) %>%
+  filter(median_iceFrac <= 0.2 & date > date_ice_on) %>%
   filter(row_number() == 1) %>%
+  #Below line looks at a slice method for ice off
+  
   rename(date_ice_off = date) %>%
   mutate(ice_duration = date_ice_off - date_ice_on) %>%
   select(lakename, ice_off_water_year = water_year, date_ice_on, date_ice_off, ice_duration) %>%
@@ -249,9 +188,9 @@ remote_insitu_merge_iceOn_dates <- remote_iceOn %>%
   #right_join(all_insitu_w_water_year, by = c("lakename")) %>%
   select(-ice_off_insitu, -ice_off_insitu_yday, -ice_off_water_year) %>%
   arrange(lakename, ice_on_water_year) #%>%
-  #na.omit()
-  #select(-year.y, -year.x, -ice_off_water_year)
-  #select(-year, -ice_off_water_year)
+#na.omit()
+#select(-year.y, -year.x, -ice_off_water_year)
+#select(-year, -ice_off_water_year)
 
 
 
@@ -265,9 +204,9 @@ remote_insitu_merge_iceOff_dates <- remote_iceOff %>%
   inner_join(all_insitu_w_water_year, by = c("lakename", "ice_off_water_year")) %>%
   select(-ice_on_insitu, -ice_on_insitu_yday, -ice_on_water_year) %>%
   arrange(lakename, ice_off_water_year) #%>%
-  #select(-year.x, -year.y, -ice_on_water_year)
-  #select(-year, -ice_on_water_year)
-  #na.omit()
+#select(-year.x, -year.y, -ice_on_water_year)
+#select(-year, -ice_on_water_year)
+#na.omit()
 
 
 #Write the csvs of ice on and ice off
@@ -296,7 +235,7 @@ ice_on_med_test <- remote_insitu_merge_iceOn_dates %>%
     #.cols = 3:20, #without full_merge_fill
     .cols = 3:4, #with full_merge_fill
     #.fns = ~ abs(mean(na.rm = TRUE, interval(.x, ice_on_insitu) %/% days(1))) #NOTE: 02.18.2022 This is not MAE its the absolute value of the mean difference
-    .fns = ~ Metrics::mae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
+    #.fns = ~ Metrics::mae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
     #.fns = ~ Metrics::mdae(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
     #.fns = ~ Metrics::rmse(predicted = as.numeric(.x), actual = as.numeric(ice_on_insitu))
   ))
@@ -330,61 +269,3 @@ ice_off_med_mean_vals <- ice_off_med_test %>%
   data.frame()
 ice_off_med_mean_vals
 
-
-
-
-################################################################################
-#Checking Lunz problem
-################################################################################
-#Ice on
-# mo_prob_on <- remote_insitu_merge_iceOn_dates %>%
-#   filter(lakename =="morskie_oko")
-# 
-# #Ice off
-# lunz_prob_off <- remote_insitu_merge_iceOff_dates %>%
-#   filter(lakename =="lunz")
-# 
-# #All lunz data
-# all_lunz_dates <- all_remote_w_median %>%
-#   filter(lakename == 'lunz')
-# 
-# #raw data
-# lunz_remote_raw <- all_remote_ice_data %>%
-#   filter(lakename == "lunz")
-# 
-# 
-# 
-# all_remote_w_median %>%
-#   filter(median_val == c("full_merge", "frac_31day_med")) %>%
-#   na.omit()%>%
-#   ggplot()+
-#   geom_line(aes(x = date, y = median_iceFrac,color = median_val), size = 1.5 )+
-#   facet_wrap(vars(lakename, median_val), ncol = 2)+
-#   theme_classic()
-
-
-
-# mad <- function(x, y) abs(mean(x - y, na.rm = TRUE))
-# 
-# 
-# mad_test <- remote_insitu_merge_iceOff_dates %>%
-#   group_by(lakename) %>%
-#   modify_at(4:20, ~ .[21] - .x)
-# 
-# 
-# 
-# mad_test_2 <- remote_insitu_merge_iceOff_dates %>%
-#   
-# 
-# 
-# 
-# #Apply MAD function
-# 
-# lapply(remote_insitu_merge_iceOn_dates[,4:20], function(x) mad(remote_insitu_merge_iceOn_dates[,21], x))
-# 
-# abs(mean(castle_grouped21_off_threshold_diff$date_remote - castle_grouped21_off_threshold_diff$date_insitu))  
-# # ggplot(data = castle_remote) +
-# #   geom_line(mapping = aes(x = date, y = ice_modis))
-# 
-# 
-# abs(remote_insitu_merge_iceOn_dates[,21] - remote_insitu_merge_iceOn_dates[,4])
