@@ -124,7 +124,7 @@ modis_full_merge %>%
 # 3. Create cleaned, merged csv for further analysis----------------------------
 
 write_csv(modis_full_merge, here("data/remote/aqua_terra_merged_clean_outlier_removed.csv"))
-write_csv(check_aqua, here('data/remote/aqua_clean.csv'), row)
+write_csv(check_aqua, here('data/remote/aqua_clean.csv'))
 write.csv(check_terra, here('data/remote/terra_clean.csv'))
 
 

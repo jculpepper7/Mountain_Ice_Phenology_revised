@@ -1,0 +1,1001 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Mountain lake ice validation},
+  pdfauthor={Xiao Yang},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{Mountain lake ice validation}
+\author{Xiao Yang}
+\date{2022-03-11}
+
+\begin{document}
+\maketitle
+
+\hypertarget{lake-ice-on-off-date-estimate-from-rs}{%
+\subsection{lake ice on off date estimate from
+rs}\label{lake-ice-on-off-date-estimate-from-rs}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rs\_clean }\OtherTok{=}\NormalTok{ rs }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(iceModis))}
+
+\NormalTok{rs\_clean }\OtherTok{=}\NormalTok{ rs\_clean }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{filter}\NormalTok{(cloudModis }\SpecialCharTok{\textless{}=} \FloatTok{0.1}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}
+    \AttributeTok{water\_year =} \FunctionTok{if\_else}\NormalTok{(}\FunctionTok{month}\NormalTok{(date) }\SpecialCharTok{\textgreater{}=} \DecValTok{8}\NormalTok{, }\FunctionTok{year}\NormalTok{(date), }\FunctionTok{year}\NormalTok{(date) }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{))}
+
+\NormalTok{ref\_clean }\OtherTok{=}\NormalTok{ ref }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}
+    \AttributeTok{water\_year =} \FunctionTok{if\_else}\NormalTok{(}\FunctionTok{month}\NormalTok{(date) }\SpecialCharTok{\textgreater{}=} \DecValTok{8}\NormalTok{, }\FunctionTok{year}\NormalTok{(date), }\FunctionTok{year}\NormalTok{(date) }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{),}
+    \AttributeTok{sdoy =}\NormalTok{ date }\SpecialCharTok{{-}} \FunctionTok{as.Date}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(water\_year, }\StringTok{"{-}08{-}01"}\NormalTok{))) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{rename}\NormalTok{(}\AttributeTok{oldname =}\NormalTok{ lakename) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{right\_join}\NormalTok{(}\FunctionTok{tibble}\NormalTok{(}
+    \AttributeTok{oldname =} \FunctionTok{c}\NormalTok{(}\StringTok{"albion"}\NormalTok{, }\StringTok{"castle"}\NormalTok{, }\StringTok{"lunz"}\NormalTok{, }\StringTok{"morskie\_oko"}\NormalTok{, }\StringTok{"silver"}\NormalTok{),}
+    \AttributeTok{lakename =} \FunctionTok{c}\NormalTok{(}\StringTok{"Albion"}\NormalTok{, }\StringTok{"Castle"}\NormalTok{, }\StringTok{"Lunz"}\NormalTok{, }\StringTok{"Morskie\_Oko"}\NormalTok{, }\StringTok{"Silver"}\NormalTok{)}
+\NormalTok{  ), }\AttributeTok{by =} \StringTok{"oldname"}\NormalTok{)}
+
+\NormalTok{binomial\_smooth }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(...) \{}
+  \FunctionTok{geom\_smooth}\NormalTok{(}\AttributeTok{method =} \StringTok{"glm"}\NormalTok{, }\AttributeTok{method.args =} \FunctionTok{list}\NormalTok{(}\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{), ...)}
+\NormalTok{\}}
+
+\FunctionTok{require}\NormalTok{(gganimate)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: gganimate
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: package 'gganimate' was built under R version 4.1.3
+\end{verbatim}
+
+\begin{verbatim}
+## No renderer backend detected. gganimate will default to writing frames to separate files
+## Consider installing:
+## - the `gifski` package for gif output
+## - the `av` package for video output
+## and restarting the R session
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{t1 }\OtherTok{=} \DecValTok{1999}
+\NormalTok{t2 }\OtherTok{=} \DecValTok{2010}
+
+\NormalTok{test }\OtherTok{=}\NormalTok{ rs\_clean }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{filter}\NormalTok{(}
+\NormalTok{    water\_year }\SpecialCharTok{\textgreater{}=}\NormalTok{ t1,}
+\NormalTok{    water\_year }\SpecialCharTok{\textless{}=}\NormalTok{ t2) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{filter}\NormalTok{(lakename }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\StringTok{"Albion"}\NormalTok{, }\StringTok{"Castle"}\NormalTok{, }\StringTok{"Lunz"}\NormalTok{, }\StringTok{"Morskie\_Oko"}\NormalTok{, }\StringTok{"Silver"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{sdoy =}\NormalTok{ date }\SpecialCharTok{{-}} \FunctionTok{as.Date}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(water\_year, }\StringTok{"{-}08{-}01"}\NormalTok{)),}
+         \AttributeTok{ice\_cover =} \FunctionTok{as.integer}\NormalTok{(iceModis }\SpecialCharTok{\textgreater{}=} \FloatTok{0.8}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ sdoy, }\AttributeTok{y =}\NormalTok{ iceModis, }\AttributeTok{group =}\NormalTok{ water\_year)) }\SpecialCharTok{+}
+  \FunctionTok{binomial\_smooth}\NormalTok{(}\AttributeTok{formula =}\NormalTok{ y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ splines}\SpecialCharTok{::}\FunctionTok{ns}\NormalTok{(x, }\DecValTok{2}\NormalTok{), }\FunctionTok{aes}\NormalTok{(}\AttributeTok{color =} \StringTok{"fitted"}\NormalTok{), }\AttributeTok{se =}\NormalTok{ T, }\AttributeTok{alpha =} \FloatTok{0.3}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_vline}\NormalTok{(}\AttributeTok{data =}\NormalTok{ ref\_clean }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{filter}\NormalTok{(water\_year }\SpecialCharTok{\textgreater{}=}\NormalTok{ t1, water\_year }\SpecialCharTok{\textless{}=}\NormalTok{ t2), }\FunctionTok{aes}\NormalTok{(}\AttributeTok{xintercept =}\NormalTok{ sdoy, }\AttributeTok{color =}\NormalTok{ event), }\AttributeTok{lwd =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{alpha =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{pch =} \DecValTok{8}\NormalTok{) }\SpecialCharTok{+}
+  \CommentTok{\# scale\_colour\_viridis\_d() +}
+  \FunctionTok{scale\_y\_continuous}\NormalTok{(}\AttributeTok{labels =}\NormalTok{ scales}\SpecialCharTok{::}\FunctionTok{percent\_format}\NormalTok{()) }\SpecialCharTok{+}
+  \FunctionTok{facet\_grid}\NormalTok{(lakename}\SpecialCharTok{\textasciitilde{}}\NormalTok{water\_year) }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}
+    \AttributeTok{x =} \StringTok{"Number of days since 08/01"}\NormalTok{,}
+    \AttributeTok{y =} \StringTok{"Lake ice coverage"}\NormalTok{,}
+    \AttributeTok{color =} \StringTok{""}
+\NormalTok{  ) }\SpecialCharTok{+} 
+  \FunctionTok{theme\_bw}\NormalTok{()}
+
+\NormalTok{test}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Don't know how to automatically pick scale for object of type difftime. Defaulting to continuous.
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\includegraphics{Mountain-lake-ice-validation_files/figure-latex/unnamed-chunk-1-1.pdf}
+
+\hypertarget{extract-ice-phenology}{%
+\subsection{extract ice phenology}\label{extract-ice-phenology}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{calc\_crossings }\OtherTok{=} \ControlFlowTok{function}\NormalTok{(y, }\AttributeTok{h =} \FloatTok{0.5}\NormalTok{) \{}
+\NormalTok{  n }\OtherTok{=} \FunctionTok{length}\NormalTok{(y)}
+\NormalTok{  y\_shifted }\OtherTok{=}\NormalTok{ y }\SpecialCharTok{{-}}\NormalTok{ h}
+\NormalTok{  crossings }\OtherTok{=} \FunctionTok{which}\NormalTok{(y\_shifted[}\DecValTok{1}\SpecialCharTok{:}\NormalTok{(n }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{)] }\SpecialCharTok{*}\NormalTok{ y\_shifted[}\DecValTok{2}\SpecialCharTok{:}\NormalTok{n] }\SpecialCharTok{\textless{}} \DecValTok{0}\NormalTok{)}
+
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{length}\NormalTok{(crossings) }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) \{}
+\NormalTok{    x\_index }\OtherTok{=} \FunctionTok{c}\NormalTok{(}\ConstantTok{NA}\NormalTok{, }\ConstantTok{NA}\NormalTok{)}
+\NormalTok{    trend }\OtherTok{=} \ConstantTok{NA}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{    x\_index }\OtherTok{=}\NormalTok{ crossings}
+\NormalTok{    trend }\OtherTok{=} \FunctionTok{diff}\NormalTok{(y)[crossings]}
+\NormalTok{  \}}
+
+  \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(x\_index, trend))}
+\NormalTok{\}}
+
+\NormalTok{pdates }\OtherTok{=}\NormalTok{ rs\_clean }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{filter}\NormalTok{(lakename }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\StringTok{"Albion"}\NormalTok{, }\StringTok{"Castle"}\NormalTok{, }\StringTok{"Lunz"}\NormalTok{, }\StringTok{"Morskie\_Oko"}\NormalTok{, }\StringTok{"Silver"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \CommentTok{\# filter(water\_year \textgreater{} 1999, water\_year \textless{} 2019) \%\textgreater{}\% }
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{sdoy =} \FunctionTok{as.integer}\NormalTok{(date }\SpecialCharTok{{-}} \FunctionTok{as.Date}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(water\_year, }\StringTok{"{-}08{-}01"}\NormalTok{)))) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{group\_by}\NormalTok{(lakename, water\_year) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{do}\NormalTok{(\{}
+\NormalTok{    dat }\OtherTok{=}\NormalTok{ .}
+\NormalTok{    fit }\OtherTok{=} \FunctionTok{glm}\NormalTok{(iceModis}\SpecialCharTok{\textasciitilde{}}\NormalTok{splines}\SpecialCharTok{::}\FunctionTok{ns}\NormalTok{(sdoy, }\AttributeTok{df =} \DecValTok{2}\NormalTok{), }\AttributeTok{family =} \StringTok{"binomial"}\NormalTok{, }\AttributeTok{data =}\NormalTok{ dat)}
+\NormalTok{    sdoy\_range }\OtherTok{=} \FunctionTok{c}\NormalTok{(}\FunctionTok{min}\NormalTok{(dat}\SpecialCharTok{$}\NormalTok{sdoy)}\SpecialCharTok{:} \FunctionTok{max}\NormalTok{(dat}\SpecialCharTok{$}\NormalTok{sdoy))}
+\NormalTok{    pred }\OtherTok{=} \FunctionTok{predict}\NormalTok{(fit, }\AttributeTok{newdata =} \FunctionTok{tibble}\NormalTok{(}\AttributeTok{sdoy =}\NormalTok{ sdoy\_range), }\AttributeTok{type =} \StringTok{"response"}\NormalTok{, }\AttributeTok{se.fit =}\NormalTok{ T)}
+    
+\NormalTok{    temp }\OtherTok{=} \FunctionTok{calc\_crossings}\NormalTok{(pred}\SpecialCharTok{$}\NormalTok{fit, }\AttributeTok{h =} \FloatTok{0.5}\NormalTok{)}
+\NormalTok{    crossings\_index }\OtherTok{=}\NormalTok{ temp[[}\DecValTok{1}\NormalTok{]]}
+\NormalTok{    trend }\OtherTok{=}\NormalTok{ temp[[}\DecValTok{2}\NormalTok{]] }\SpecialCharTok{\textgreater{}=} \DecValTok{0}
+    \CommentTok{\# crossings\_plus\_index = calc\_crossings(pred$fit + pred$se.fit, h = 0.5)}
+    \CommentTok{\# crossings\_minus\_index = calc\_crossings(pred$fit {-} pred$se.fit, h = 0.5)}
+    
+    \FunctionTok{tibble}\NormalTok{(}\AttributeTok{sdoy\_fit =}\NormalTok{ sdoy\_range[crossings\_index], }\AttributeTok{trend =}\NormalTok{ trend)}
+    
+\NormalTok{  \}) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{ungroup}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{distinct}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{event =} \FunctionTok{factor}\NormalTok{(trend, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(T, F), }\AttributeTok{labels =} \FunctionTok{c}\NormalTok{(}\StringTok{"ice\_on"}\NormalTok{, }\StringTok{"ice\_off"}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+\end{verbatim}
+
+\begin{verbatim}
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+
+## Warning in eval(family$initialize): non-integer #successes in a binomial glm!
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pdates }\SpecialCharTok{\%\textgreater{}\%} 
+\NormalTok{  ggplot }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ water\_year, }\AttributeTok{y =}\NormalTok{ sdoy\_fit), }\AttributeTok{color =} \StringTok{"black"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{data =}\NormalTok{ ref\_clean, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ water\_year, }\AttributeTok{y =}\NormalTok{ sdoy, }\AttributeTok{color =}\NormalTok{ event)) }\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{lakename) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: Removed 10 rows containing missing values (geom_point).
+\end{verbatim}
+
+\includegraphics{Mountain-lake-ice-validation_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{merged\_pdates }\OtherTok{=}\NormalTok{ pdates }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{inner\_join}\NormalTok{(ref\_clean, }\AttributeTok{by =} \FunctionTok{c}\NormalTok{(}\StringTok{"lakename"}\NormalTok{, }\StringTok{"water\_year"}\NormalTok{, }\StringTok{"event"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{date\_modis =} \FunctionTok{as.Date}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(water\_year, }\StringTok{"{-}08{-}01"}\NormalTok{)) }\SpecialCharTok{+}\NormalTok{ sdoy\_fit)}
+
+\NormalTok{merged\_pdates }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ sdoy\_fit, }\AttributeTok{y =}\NormalTok{ sdoy)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_abline}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{slope =} \DecValTok{1}\NormalTok{, }\AttributeTok{intercept =} \DecValTok{0}\NormalTok{), }\AttributeTok{color =} \StringTok{"black"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{facet\_grid}\NormalTok{(lakename}\SpecialCharTok{\textasciitilde{}}\NormalTok{event, }\AttributeTok{scales =} \StringTok{"free"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Don't know how to automatically pick scale for object of type difftime. Defaulting to continuous.
+\end{verbatim}
+
+\includegraphics{Mountain-lake-ice-validation_files/figure-latex/unnamed-chunk-2-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{validation }\OtherTok{=}\NormalTok{ merged\_pdates }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ sdoy\_fit, }\AttributeTok{y =}\NormalTok{ sdoy, }\AttributeTok{pch =}\NormalTok{ lakename, }\AttributeTok{color =}\NormalTok{ lakename)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{geom\_abline}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{slope =} \DecValTok{1}\NormalTok{, }\AttributeTok{intercept =} \DecValTok{0}\NormalTok{), }\AttributeTok{color =} \StringTok{"black"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{facet\_wrap}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{event, }\AttributeTok{scales =} \StringTok{"free"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{() }\SpecialCharTok{+}
+  \FunctionTok{labs}\NormalTok{(}\AttributeTok{x =} \StringTok{"Days since 8/1 from MODIS"}\NormalTok{,}
+       \AttributeTok{y =} \StringTok{"Days since 8/1 from in situ"}\NormalTok{,}
+       \AttributeTok{color =} \StringTok{"Lake name"}\NormalTok{,}
+       \AttributeTok{pch =} \StringTok{"Lake name"}\NormalTok{)}
+
+\CommentTok{\# validation \%\textgreater{}\% }
+\CommentTok{\#   ggsave(filename = "output/validation.png",}
+\CommentTok{\#          width = 7,}
+\CommentTok{\#          height = 5)}
+\CommentTok{\# }
+\CommentTok{\# }
+\CommentTok{\# dat = rs\_clean \%\textgreater{}\% filter(lakename == "Albion", water\_year == 1999) \%\textgreater{}\% mutate(sdoy = as.integer(date {-} as.Date(paste0(water\_year, "{-}08{-}01"))))}
+\CommentTok{\# }
+\CommentTok{\# pred$fit}
+\CommentTok{\# pred$se.fit}
+\CommentTok{\# }
+\CommentTok{\# n = length(pred$fit)}
+\CommentTok{\# fit\_shifted = (pred$fit {-} 0.5)}
+\CommentTok{\# crossings = which(fit\_shifted[1:(n {-} 1)] * fit\_shifted[2:n] \textless{} 0)}
+\CommentTok{\# }
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}
