@@ -108,11 +108,12 @@ remote_iceOff <- read_csv(here("data/remote/sierra_lake_ice_data/sierra_ice_off.
 #Load hydroLAKES data and join to ice on and ice off data-----------------------
 
 # #hydrolakes data (see script # 00 for source and link to data)
-hydro_lakes <- read_csv(here('data/hydroLAKES/HydroLAKES_N_America.csv')) %>%
+hydro_lakes <- read_csv(here('data/remote/sierra_lake_ice_data/HydroLAKES_N_America.csv')) %>%
   clean_names() %>%
   select(-system_index) %>%
-  arrange(hylak_id)
-
+  arrange(hylak_id) %>%
+  select(hylak_id, pour_lat, pour_long, elevation, lake_area)
+head(hydro_lakes)
 # hydro_lakes %>%
 #   count(hylak_id) #1,048,575
 
@@ -123,31 +124,53 @@ iceOn_full_data <- remote_iceOn %>%
   select(-median_val)
 
 #try man-kendall test on ice on
+library(tidyverse)
 library(Kendall)
 library(openair)
+library(wql)
 
 ice_on_mk_test <- iceOn_full_data %>%
   na.omit() %>%
   group_by(hylak_id) %>%
+  filter(elevation >= 1500,
+         n() >= 20) %>% #filtering out any lakes with fewer than 10 rows of data
   mutate(ice_on_yday = yday(date),
          yday_w_year = ifelse(ice_on_yday >= 274, ice_on_yday - 273, ice_on_yday + 92)) %>%
-  filter(hylak_id != 792,
-         hylak_id != 9345,
-         hylak_id != 112326,
-         hylak_id != 112408,
-         hylak_id != 112949) %>%
+  # filter(hylak_id != 792,
+  #        hylak_id != 9345,
+  #        hylak_id != 112326,
+  #        hylak_id != 112408,
+  #        hylak_id != 112949) %>%
   #select(hylak_id.x, date) %>%
-  summarize(ice_on_tau = MannKendall(yday_w_year)$tau,
-            ice_on_p.value = MannKendall(yday_w_year)$sl) %>%
+  # summarize(ice_on_tau = MannKendall(yday_w_year)$tau,
+  #           ice_on_p.value = MannKendall(yday_w_year)$sl) %>%
+  summarize(ice_on_sen = mannKen(yday_w_year)$sen.slope,
+            ice_on_rel_slope = mannKen(yday_w_year)$sen.slope.rel,
+            ice_on_p.value = mannKen(yday_w_year)$p.value) %>%
   ungroup
 
+unique(ice_on_mk_test$hylak_id) #filtering out any lakes with fewer than 10 rows of data leaves 407 lakes greater than 1500m in elevation ## 284 if we filter to only 20 years of data
+
 ice_on_mk_test_pos <- ice_on_mk_test %>%
-  filter(ice_on_tau >0) #62 with positive trend (so later in the year ice on) (57%)
+  filter(ice_on_sen >0,
+         ice_on_p.value<0.05) %>%  #62 with positive trend (so later in the year ice on) (57%) #update: 4.20.2022 - 305 lakes with pos trend (later ice formation)
+  summarise(mean_ice_on_trend = median(ice_on_sen),
+            mean_ice_on_relative_slope = mean(ice_on_rel_slope))
 ice_on_mk_test_neg <- ice_on_mk_test %>%
-  filter(ice_on_tau <0) #41 with negative trend (so earlier in the year ice off) (38%)
+  filter(ice_on_tau <0) %>%  #41 with negative trend (so earlier in the year ice on) (38%) #update: 4.20.2022 - 99 with neg trend (earlier ice formation)
+  summarise(mean_ice_on_trend = mean(ice_on_tau))
 ice_on_mk_test_zero <- ice_on_mk_test %>%
-  filter(ice_on_tau ==0) #5 with 0 so no trend (5%)
-  
+  filter(ice_on_tau ==0) #5 with 0 so no trend (5%) #update: 4.20.2022 - 3 lake with no trend
+
+ice_on_mk_test %>% 
+  filter(ice_on_tau > 0,
+         ice_on_p.value <0.05) 
+
+#using wql mannKen()
+
+
+
+
 
 #groupby and run regressions
 all_regress_ice_on <-  iceOn_full_data %>% 
@@ -182,28 +205,39 @@ iceOff_full_data <- remote_iceOff %>%
 ice_off_mk_test <- iceOff_full_data %>%
   na.omit() %>%
   group_by(hylak_id) %>%
+  filter(elevation >= 1500,
+         n() >= 20) %>% 
   mutate(ice_off_yday = yday(date),
          yday_w_year = ifelse(ice_off_yday >= 274, ice_off_yday - 273, ice_off_yday + 92)) %>%
-  filter(hylak_id != 792,
-         hylak_id != 798,
-         hylak_id != 9092,
-         hylak_id != 9148,
-         hylak_id != 111582,
-         hylak_id != 112237,
-         hylak_id != 112327,
-         hylak_id != 112407,
-         hylak_id != 112439,
-         hylak_id != 113176) %>%
+  # filter(hylak_id != 792,
+  #        hylak_id != 798,
+  #        hylak_id != 9092,
+  #        hylak_id != 9148,
+  #        hylak_id != 111582,
+  #        hylak_id != 112237,
+  #        hylak_id != 112327,
+  #        hylak_id != 112407,
+  #        hylak_id != 112439,
+         # hylak_id != 113176) %>%
   #select(hylak_id.x, date) %>%
   summarize(ice_off_tau = MannKendall(yday_w_year)$tau,
-            ice_off_p.value = MannKendall(yday_w_year)$sl) %>%
+            ice_off_p.value = MannKendall(yday_w_year)$sl,
+            ice_off_sen = mannKen(yday_w_year)$sen.slope,
+            ice_off_rel_slope = mannKen(yday_w_year)$sen.slope.rel) %>%
   ungroup
 
+unique(ice_off_mk_test$hylak_id)
 
 ice_off_mk_test_pos <- ice_off_mk_test %>%
-  filter(ice_off_tau >0) #5 with positive trend (so later in the year ice off) (4%)
+  filter(ice_off_tau >0) %>%  #5 with positive trend (so later in the year ice off) (4%) #update 4.20.2022: 22 lakes with positive (later ice off) - trend = 0.12 days per year
+  summarise(mean_ice_off_tau = mean(ice_off_tau),
+            mean_ice_off_trend = median(ice_off_sen),
+            mean_ice_off_relative_slope = mean(ice_off_rel_slope))
 ice_off_mk_test_neg <- ice_off_mk_test %>%
-  filter(ice_off_tau <0) #109 with negative trend (so earlier in the year ice off) (95%)
+  filter(ice_off_tau < 0) #%>%  #109 with negative trend (so earlier in the year ice off) (95%)
+  # summarise(mean_ice_off_tau = mean(ice_off_tau),
+  #           mean_ice_off_trend = median(ice_off_sen),
+  #           mean_ice_off_relative_slope = mean(ice_off_rel_slope))
 ice_off_mk_test_zero <- ice_off_mk_test %>%
   filter(ice_off_tau ==0) #1 with 0 so no trend (1%)
 

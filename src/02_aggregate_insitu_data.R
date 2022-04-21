@@ -35,7 +35,12 @@ albion_insitu <- albion %>%
   mutate(ice_on_insitu = mdy(ice_on), # Fix dates using lubridate
          ice_off_insitu = mdy(ice_off),
          ice_on_insitu_yday = yday(ice_on_insitu), #add the ordinal day for ice on and off
-         ice_off_insitu_yday = yday(ice_off_insitu)) %>%
+         ice_off_insitu_yday = yday(ice_off_insitu),
+         # latitude = ,
+         # longitude = ,
+         # elevation = ,
+         # 
+         ) %>%
   select(-ice_on, -ice_off) #remove columns with incorrect formatting
 
 #Take a look
@@ -51,7 +56,10 @@ castle_insitu <- castle %>%
          ice_on_insitu_yday = ice_on) %>%
   mutate(ice_off_insitu = make_date(year) + ice_off_insitu_yday - 1, #add the actual date rather than just the day of year
          ice_on_insitu = make_date(year) + ice_on_insitu_yday - 1,
-         lake = c("castle")) %>%  #add the ordinal day for ice off
+         lake = c("castle"),
+         # elevation = 1660, #meters
+         # area = 0.2
+         ) %>%  #add the ordinal day for ice off
   select(-name) %>% #remove unnecessary column
   select(lake, year, ice_on_insitu, ice_off_insitu, ice_on_insitu_yday, ice_off_insitu_yday) %>% #reorder columns to be uniform with other dataframes
   filter(year >= 2000) #filter out rows that cannot be used in analysis (MODIS only dates back to 2000)

@@ -12,15 +12,15 @@ require(tidyverse)
 require(lubridate)
 require(here)
 
-#rs = read_csv(here("data/combined/modis_allLakes_output_Terra_Aqua_merged_raw.csv")) #raw MODIS data without Norwegian lakes
-#nor_lakes <- read_csv(here('data/combined/modis_norwegian_lakes.csv'))
-rs = read_csv(here('data/remote/aqua_terra_merged_clean_outlier_removed.csv'))%>%
-  rename(iceModis = full_merge)
+rs = read_csv(here("data/combined/modis_allLakes_output_Terra_Aqua_merged_raw.csv")) #raw MODIS data without Norwegian lakes
+nor_lakes <- read_csv(here('data/combined/modis_norwegian_lakes.csv'))
+# rs = read_csv(here('data/remote/aqua_terra_merged_clean_outlier_removed.csv'))%>%
+#   rename(iceModis = full_merge)
 ref = read_csv(here("data/combined/all_insitu_water_year_1.csv")) 
 
 
-# rs = rs %>%
-#   bind_rows(nor_lakes)
+rs = rs %>%
+  bind_rows(nor_lakes)
 
 ## remote sensing data
 
@@ -73,18 +73,18 @@ rs_clean = rs %>% filter(!is.na(iceModis))
 rs_clean = rs_clean %>% 
   #(cloudModis <= 0.1) %>% 
   mutate(
-    #water_year = if_else(month(date) >= 8, year(date), year(date) - 1)) %>%
-    water_year = if_else(month(date) >= 10, year(date), year(date) - 1)) %>%
+    water_year = if_else(month(date) >= 8, year(date), year(date) - 1)) %>%
+    #water_year = if_else(month(date) >= 10, year(date), year(date) - 1)) %>%
   filter(lakename %in% c("Albion", "Castle", "Lunz", "Morskie_Oko", "Silver", "Muressan", "bergsjo", "bygdin", "elgsjoen", "fundin", "kaldfjorden", "leirvatnet", "marsjoen", "nedreHeimdalsvatn", "ovreHeimdalsvatnet", "rodungen", "tyin", "vinstern", "aursjo"))
 
 ref_clean = ref %>% 
   mutate(
-    # water_year = if_else(month(date) >= 8, year(date), year(date) - 1),
-    # water_year = if_else(month(date) >= 8, year(date), year(date) - 1),
-    # sdoy = date - as.Date(paste0(water_year, "-08-01"))) %>%
-    water_year = if_else(month(date) >= 10, year(date), year(date) - 1),
-    water_year = if_else(month(date) >= 10, year(date), year(date) - 1),
-    sdoy = date - as.Date(paste0(water_year, "-10-01"))) %>%
+    water_year = if_else(month(date) >= 8, year(date), year(date) - 1),
+    water_year = if_else(month(date) >= 8, year(date), year(date) - 1),
+    sdoy = date - as.Date(paste0(water_year, "-08-01"))) %>%
+    # water_year = if_else(month(date) >= 10, year(date), year(date) - 1),
+    # water_year = if_else(month(date) >= 10, year(date), year(date) - 1),
+    # sdoy = date - as.Date(paste0(water_year, "-10-01"))) %>%
   rename(oldname = lakename) %>% 
   right_join(tibble(
     oldname = c("albion", "castle", "lunz", "morskie_oko", "silver", "muressan", "bergsjo", "bygdin", "elgsjoen", "fundin", "kaldfjorden", "leirvatnet", "marsjoen", "nedreHeimdalsvatn", "ovreHeimdalsvatnet", "rodungen", "tyin", "vinstern", "aursjo"),
@@ -97,16 +97,16 @@ binomial_smooth <- function(...) {
 
 require(gganimate)
 
-t1 = 2011
-t2 = 2022 
+t1 = 2015
+t2 = 2020 
 
 test = rs_clean %>% 
   filter(
     water_year >= t1,
     water_year <= t2) %>% 
-  filter(lakename %in% c("leirvatnet")) %>% 
-  mutate(#sdoy = date - as.Date(paste0(water_year, "-08-01")),
-         sdoy = date - as.Date(paste0(water_year, "-10-01")),
+  filter(lakename %in% c("Morskie_Oko")) %>% 
+  mutate(sdoy = date - as.Date(paste0(water_year, "-08-01")),
+         #sdoy = date - as.Date(paste0(water_year, "-10-01")),
          ice_cover = as.integer(iceModis >= 0.8)) %>% 
   ggplot(aes(x = sdoy, y = iceModis, group = water_year)) +
   binomial_smooth(formula = y ~ splines::ns(x, 2), aes(color = "fitted"), se = T, alpha = 0.3) +
@@ -148,8 +148,8 @@ calc_crossings = function(y, h = 0.5) {
 pdates = rs_clean %>% 
   #filter(lakename %in% c("Albion", "Castle", "Lunz", "Morskie_Oko", "Silver")) %>% 
   # filter(water_year > 1999, water_year < 2019) %>% 
-  #mutate(sdoy = as.integer(date - as.Date(paste0(water_year, "-08-01")))) %>%
-  mutate(sdoy = as.integer(date - as.Date(paste0(water_year, "-10-01")))) %>%
+  mutate(sdoy = as.integer(date - as.Date(paste0(water_year, "-08-01")))) %>%
+  #mutate(sdoy = as.integer(date - as.Date(paste0(water_year, "-10-01")))) %>%
   group_by(lakename, water_year) %>% 
   do({
     dat = .
@@ -178,8 +178,10 @@ pdates %>%
 
 merged_pdates = pdates %>% 
   inner_join(ref_clean, by = c("lakename", "water_year", "event")) %>% 
-  #mutate(date_modis = as.Date(paste0(water_year, "-08-01")) + sdoy_fit)
-  mutate(date_modis = as.Date(paste0(water_year, "-10-01")) + sdoy_fit)
+  mutate(date_modis = as.Date(paste0(water_year, "-08-01")) + sdoy_fit)
+  #mutate(date_modis = as.Date(paste0(water_year, "-10-01")) + sdoy_fit)
+
+#write_csv(merged_pdates, here('data/combined/merged_pdates.csv'))
 
 merged_pdates %>% 
   mutate(dif = sdoy_fit - as.numeric(sdoy)) %>% 
@@ -191,6 +193,7 @@ merged_pdates %>%
     N = n()) %>% 
   ungroup() %>% 
   arrange(event, MAE)
+#write_csv(error, here('data/combined/error_pdates.csv'))
 
 merged_pdates %>% 
   ggplot(aes(x = sdoy_fit, y = sdoy, color = lakename)) + #, pch = lakename
@@ -229,6 +232,10 @@ validation = merged_pdates %>%
 # fit_shifted = (pred$fit - 0.5)
 # crossings = which(fit_shifted[1:(n - 1)] * fit_shifted[2:n] < 0)
 # 
+
+
+################################################################################
+#Idea: Plot with all grey points for all lakes and then a plot with black points for "suitable" lakes, so we can see the contrast.
 
 ```
 
