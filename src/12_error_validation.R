@@ -54,15 +54,15 @@ rs = rs %>%
   mutate(date = as.Date(date),
          lakename = as.factor(lakename))
 
-rs %>%
-  filter(date >= "2014-01-01",
-         !is.na(iceModis),
-         cloudModis <= 0.1) %>%
-  ggplot(aes(x = date, y = iceModis)) +
-  geom_line(alpha = 0.2) +
-  geom_point(aes(color = cloudModis), size = 0.2) +
-  scale_color_viridis_c() +
-  facet_wrap(~lakename)
+# rs %>%
+#   filter(date >= "2014-01-01",
+#          !is.na(iceModis),
+#          cloudModis <= 0.1) %>%
+#   ggplot(aes(x = date, y = iceModis)) +
+#   geom_line(alpha = 0.2) +
+#   geom_point(aes(color = cloudModis), size = 0.2) +
+#   scale_color_viridis_c() +
+#   facet_wrap(~lakename)
 
 rs_clean = rs %>% filter(!is.na(iceModis))
 
@@ -106,7 +106,7 @@ ref %>%
 ref_clean = ref %>% 
   mutate(
     water_year = if_else(month(date) >= 8, year(date), year(date) - 1),
-    water_year = if_else(month(date) >= 8, year(date), year(date) - 1),
+    #water_year = if_else(month(date) >= 8, year(date), year(date) - 1),
     sdoy = date - as.Date(paste0(water_year, "-08-01"))) %>%
   # water_year = if_else(month(date) >= 10, year(date), year(date) - 1),
   # water_year = if_else(month(date) >= 10, year(date), year(date) - 1),
@@ -123,16 +123,16 @@ ref_clean = ref %>%
 
 
 # Total number of cloudy and noncloudy images by water year
-summary_cloudy_images <- rs_clean %>%
-  mutate(
-    lakename = tolower(lakename)
-  ) %>% 
-  group_by(lakename, water_year) %>%
-  summarise(
-    total_yearly_cloudy_images = 365 - n(),
-    total_yearly_noncloudy_images = n()
-  ) %>%
-  ungroup() 
+# summary_cloudy_images <- rs_clean %>%
+#   mutate(
+#     lakename = tolower(lakename)
+#   ) %>% 
+#   group_by(lakename, water_year) %>%
+#   summarise(
+#     total_yearly_cloudy_images = 365 - n(),
+#     total_yearly_noncloudy_images = n()
+#   ) %>%
+#   ungroup() 
 
 # Total number of cloudy images by season
 summary_seasonal_cloudy_images <- rs_clean %>% 
@@ -145,13 +145,13 @@ summary_seasonal_cloudy_images <- rs_clean %>%
   )
 
 #mean cloudy images per lake
-mean_cloudy_per_lake <- summary_cloudy_images %>% 
-  group_by(lakename) %>% 
-  summarise(
-    mean_cloudiness = mean(total_yearly_cloudy_images),
-    mean_images = mean(total_yearly_noncloudy_images)
-  ) %>% 
-  arrange(mean_cloudiness)
+# mean_cloudy_per_lake <- summary_cloudy_images %>% 
+#   group_by(lakename) %>% 
+#   summarise(
+#     mean_cloudiness = mean(total_yearly_cloudy_images),
+#     mean_images = mean(total_yearly_noncloudy_images)
+#   ) %>% 
+#   arrange(mean_cloudiness)
 
 # 2. Merge ice validation with topographic roughness----------------------------
 
@@ -170,7 +170,7 @@ topo_roughness <- read_csv(here('data/combined/lake_topo_roughness.csv')) %>%
 # Merge validation and topo_roughness data frames
 data_for_regression <- ref_clean %>%
   full_join(topo_roughness, by = c('lakename')) %>%
-  full_join(summary_cloudy_images, by = c('lakename', 'water_year')) %>% 
+  #full_join(summary_cloudy_images, by = c('lakename', 'water_year')) %>% 
   full_join(summary_seasonal_cloudy_images, by = c('lakename', 'water_year')) %>% 
   full_join(error_pdates)
 
@@ -259,27 +259,27 @@ summary(mae_by_maxRoughness) # r^2 = 0.42
 
 # Error ~ cloudy days
 
-ggplot(na.omit(data_for_regression))+
-  geom_point(aes(x = total_yearly_cloudy_images, y = MAE))+
-  geom_smooth(aes(x = total_yearly_cloudy_images, y = MAE), method = 'lm', se = F)+
-  theme_classic()+
-  facet_wrap(~event)
-
-mae_by_total_yearly_cloudy_images = lm(data = data_for_regression, formula = MAE~total_yearly_cloudy_images)
-
-summary(mae_by_total_yearly_cloudy_images)
+# ggplot(na.omit(data_for_regression))+
+#   geom_point(aes(x = total_yearly_cloudy_images, y = MAE))+
+#   geom_smooth(aes(x = total_yearly_cloudy_images, y = MAE), method = 'lm', se = F)+
+#   theme_classic()+
+#   facet_wrap(~event)
+# 
+# mae_by_total_yearly_cloudy_images = lm(data = data_for_regression, formula = MAE~total_yearly_cloudy_images)
+# 
+# summary(mae_by_total_yearly_cloudy_images)
 
 # Error ~ noncloudy days
 
-ggplot(na.omit(data_for_regression))+
-  geom_point(aes(x = total_yearly_noncloudy_images, y = MAE))+
-  geom_smooth(aes(x = total_yearly_noncloudy_images, y = MAE), method = 'lm', se = F)+
-  theme_classic()+
-  facet_wrap(~event)
-
-mae_by_total_yearly_noncloudy_images = lm(data = data_for_regression, formula = MAE~total_yearly_noncloudy_images)
-
-summary(mae_by_total_yearly_noncloudy_images)
+# ggplot(na.omit(data_for_regression))+
+#   geom_point(aes(x = total_yearly_noncloudy_images, y = MAE))+
+#   geom_smooth(aes(x = total_yearly_noncloudy_images, y = MAE), method = 'lm', se = F)+
+#   theme_classic()+
+#   facet_wrap(~event)
+# 
+# mae_by_total_yearly_noncloudy_images = lm(data = data_for_regression, formula = MAE~total_yearly_noncloudy_images)
+# 
+# summary(mae_by_total_yearly_noncloudy_images)
 
 # Error ~ seasonal noncloudy images
 
@@ -315,8 +315,8 @@ data_for_regression_ice_on = data_for_regression %>%
     area, 
     elevation, 
     maxRoughness, 
-    total_yearly_cloudy_images, 
-    total_yearly_noncloudy_images, 
+    #total_yearly_cloudy_images, 
+    #total_yearly_noncloudy_images, 
     season, 
     seasonal_noncloudy_images
     ) %>% 
@@ -397,7 +397,7 @@ ggplot(data=predicted.data, aes(x=rank, y=probability.of.suitability)) +
   ylab("Predicted probability of suitability")+
   ggtitle('Logistic regression: Suitability ~ Topographic Roughness + Winter Non-Cloudy Days')
 
-ggsave(here('output/logistic_regression_results/suitability_v_winter_noncloudy_days.png'), dpi = 300)
+#ggsave(here('output/logistic_regression_results/suitability_v_winter_noncloudy_days.png'), dpi = 300)
 
 #Use logistic regressino model to predict ice on suitability--------------------
 
@@ -418,28 +418,28 @@ splits <- data_for_regression_ice_on %>%
 
 splits
 
-model_fit_glm <- logistic_reg() %>% 
+model_fit_glm_ice_on <- logistic_reg() %>% 
   set_engine("glm") %>% 
-  fit(suitability ~ area+maxRoughness+total_yearly_cloudy_images, data = training(splits))
-  #fit(suitability ~ area+maxRoughness+seasonal_noncloudy_images, data = training(splits))
+  #fit(suitability ~ area+maxRoughness+total_yearly_cloudy_images, data = training(splits))
+  fit(suitability ~ maxRoughness+seasonal_noncloudy_images, data = training(splits))
 
-model_fit_glm
+model_fit_glm_ice_on
 
-prediction_class_test <- predict(model_fit_glm, new_data = testing(splits), type = 'class')
+prediction_class_test_ice_on <- predict(model_fit_glm_ice_on, new_data = testing(splits), type = 'class')
 
-prediction_prob_test <- predict(model_fit_glm, new_data = testing(splits), type = 'prob')
+prediction_prob_test_ice_on <- predict(model_fit_glm_ice_on, new_data = testing(splits), type = 'prob')
 
 
-results_tbl <- bind_cols(
+results_tbl_ice_on <- bind_cols(
   prediction_class_test,
   prediction_prob_test,
   testing(splits)
 )
 
-results_tbl %>% 
+results_tbl_ice_on %>% 
   roc_auc(suitability, .pred_suitable)
 
-results_tbl %>% 
+results_tbl_ice_on %>% 
   roc_curve(suitability, .pred_suitable) %>% 
   autoplot(
     options = list(
@@ -447,7 +447,7 @@ results_tbl %>%
     )
   ) 
 
-model_fit_glm$fit %>% 
+model_fit_glm_ice_on$fit %>% 
   vip(
     num_features = 5,
     geom = 'point',
@@ -474,8 +474,8 @@ data_for_regression_ice_off = data_for_regression %>%
     area, 
     elevation, 
     maxRoughness, 
-    total_yearly_cloudy_images, 
-    total_yearly_noncloudy_images, 
+    #total_yearly_cloudy_images, 
+    #total_yearly_noncloudy_images, 
     season, 
     seasonal_noncloudy_images
   ) %>% 
@@ -494,7 +494,7 @@ data_for_regression_ice_off = data_for_regression %>%
 
 
 ## GLM model
-logistic_model_ice_off <- glm(formila = suitability ~ maxRoughness+cloudiness+...., family = binomial)
+#logistic_model_ice_off <- glm(formila = suitability ~ maxRoughness+cloudiness+...., family = binomial)
 #This may give us the suitability
 #predict(model)
 
@@ -560,28 +560,28 @@ splits_off <- data_for_regression_ice_off %>%
 
 splits_off
 
-model_fit_glm <- logistic_reg() %>% 
+model_fit_glm_ice_off <- logistic_reg() %>% 
   set_engine("glm") %>% 
-  fit(suitability ~ area+elevation+maxRoughness+total_yearly_cloudy_images, data = training(splits_off))
-  #fit(suitability ~ area+elevation+maxRoughness+seasonal_noncloudy_images, data = training(splits_off))
+  #fit(suitability ~ area+elevation+maxRoughness+total_yearly_cloudy_images, data = training(splits_off))
+  fit(suitability ~ maxRoughness+seasonal_noncloudy_images, data = training(splits_off))
 
-model_fit_glm
+model_fit_glm_ice_off
 
-prediction_class_test <- predict(model_fit_glm, new_data = testing(splits_off), type = 'class')
+prediction_class_test_ice_off <- predict(model_fit_glm_ice_off, new_data = testing(splits_off), type = 'class')
 
-prediction_prob_test <- predict(model_fit_glm, new_data = testing(splits_off), type = 'prob')
+prediction_prob_test_ice_off <- predict(model_fit_glm_ice_off, new_data = testing(splits_off), type = 'prob')
 
 
-results_tbl <- bind_cols(
+results_tbl_ice_off <- bind_cols(
   prediction_class_test,
   prediction_prob_test,
   testing(splits_off)
 )
 
-results_tbl %>% 
+results_tbl_ice_off %>% 
   roc_auc(suitability, .pred_suitable)
 
-results_tbl %>% 
+results_tbl_ice_off %>% 
   roc_curve(suitability, .pred_suitable) %>% 
   autoplot(
     options = list(

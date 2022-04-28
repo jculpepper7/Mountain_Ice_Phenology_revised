@@ -72,7 +72,7 @@ ref %>%
 rs_clean = rs %>% filter(!is.na(iceModis))
 
 rs_clean = rs_clean %>% 
-  #(cloudModis <= 0.1) %>% 
+  filter(cloudModis <= 0.1) %>% 
   mutate(
     water_year = if_else(month(date) >= 8, year(date), year(date) - 1)) %>%
     #water_year = if_else(month(date) >= 10, year(date), year(date) - 1)) %>%
@@ -196,7 +196,7 @@ merged_pdates %>%
     N = n()) %>% 
   ungroup() %>% 
   arrange(event, MAE)
-#write_csv(error, here('data/combined/error_pdates_2022.04.18.csv'))
+#write_csv(error, here('data/combined/error_pdates_2022.04.19.csv'))
 
 merged_pdates %>% 
   ggplot(aes(x = sdoy_fit, y = sdoy)) + #, pch = lakename

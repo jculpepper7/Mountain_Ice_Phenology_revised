@@ -18,7 +18,7 @@ require(here)
 
 #problem with Sierra lakes tiles 3, 7: 'Error in qr.default(t(const)): NA/NaN/Inf in foreign function call (arg 1)'
 
-rs_gee = read_csv(here("data/remote/north_american_data_by_tile/modis_NonSierraLakes_output_Terra_Aqua_merged_tile_0_151d74227ee92eae87de22e56b00e461.csv"))
+rs_gee = read_csv(here("data/remote/north_american_data_by_tile/sierra_test/modis_SierraLakes_output_Terra_Aqua_merged_tile_3.csv"))
 
 head(rs_gee)
 
@@ -67,16 +67,16 @@ binomial_smooth <- function(...) {
 require(gganimate)
 
 # t1 = 2010
-# t2 = 2020 
+# t2 = 2020
 # 
-# test = rs_gee_clean %>% 
+# test = rs_gee_clean %>%
 #   filter(
 #     water_year >= t1,
 #     water_year <= t2,
-#     Hylak_id %in% c('112553')) %>% 
+#     Hylak_id %in% c('1072166')) %>%
 #   mutate(sdoy = date - as.Date(paste0(water_year, "-08-01")),
 #          #sdoy = date - as.Date(paste0(water_year, "-10-01")),
-#          ice_cover = as.integer(iceModis >= 0.8)) %>% 
+#          ice_cover = as.integer(iceModis >= 0.8)) %>%
 #   ggplot(aes(x = sdoy, y = iceModis, group = water_year)) +
 #   binomial_smooth(formula = y ~ splines::ns(x, 2), aes(color = "fitted"), se = T, alpha = 0.3) +
 #   # geom_vline(data = ref_clean %>% filter(water_year >= t1, water_year <= t2, Hylak_id == "1061179"), aes(xintercept = sdoy, color =     event), lwd = 1) +
@@ -89,7 +89,7 @@ require(gganimate)
 #     x = "Number of days since 08/01",
 #     y = "Lake ice coverage",
 #     color = ""
-#   ) + 
+#   ) +
 #   theme_bw()
 # 
 # test
@@ -137,7 +137,7 @@ pdates = rs_gee_clean %>%
 
 #unique(pdates$Hylak_id)
 
-write_csv(pdates, here('data/n_american_ice_phenology/n_american_lakes_tile_0.csv'))
+write_csv(pdates, here('data/n_american_ice_phenology/sierra_lakes_tile_3.csv'))
 
 
 # pdates %>% 
