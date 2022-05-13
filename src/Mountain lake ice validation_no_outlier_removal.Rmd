@@ -98,33 +98,40 @@ binomial_smooth <- function(...) {
 
 require(gganimate)
 
-t1 = 2015
-t2 = 2020 
+t1 = 2016
+t2 = 2016
 
 test = rs_clean %>% 
   filter(
     water_year >= t1,
     water_year <= t2) %>% 
-  filter(lakename %in% c("Albion")) %>% 
+  filter(lakename %in% c("Castle")) %>% 
   mutate(sdoy = date - as.Date(paste0(water_year, "-08-01")),
          #sdoy = date - as.Date(paste0(water_year, "-10-01")),
          ice_cover = as.integer(iceModis >= 0.8)) %>% 
   ggplot(aes(x = sdoy, y = iceModis, group = water_year)) +
-  binomial_smooth(formula = y ~ splines::ns(x, 2), aes(color = "fitted"), se = T, alpha = 0.3) +
-  geom_vline(data = ref_clean %>% filter(water_year >= t1, water_year <= t2, lakename == "Albion"), aes(xintercept = sdoy, color =     event), lwd = 1) +
+  #binomial_smooth(formula = y ~ splines::ns(x, 2), aes(color = "fitted"), se = T, alpha = 0.3) +
+  geom_vline(data = ref_clean %>% filter(water_year >= t1, water_year <= t2, lakename == "Castle"), aes(xintercept = sdoy, color = event), lwd = 1) +
   geom_point(alpha = 0.5, pch = 8) +
   # scale_colour_viridis_d() +
   scale_y_continuous(labels = scales::percent_format()) +
   #facet_grid(lakename~water_year) +
-  facet_grid(~water_year)+
+  #facet_grid(~water_year)+
   labs(
     x = "Number of days since 08/01",
     y = "Lake ice coverage",
     color = ""
   ) + 
-  theme_bw()
+  ggtitle('Castle Lake Ice Fraction')+
+  theme_bw()+
+  theme(
+    text = element_text(size = 30),
+    legend.position = 'bottom'
+  )
 
 test
+
+ggsave(here('output/figs_for_JASM/castle_2016_no_fit_title.png'), dpi = 500)
 ```
 
 ## extract ice phenology
@@ -171,11 +178,19 @@ pdates = rs_clean %>%
   mutate(event = factor(trend, levels = c(T, F), labels = c("ice_on", "ice_off")))
 
 pdates %>% 
+  filter(lakename %in% c('Albion', 'Morskie_Oko')) %>% 
   ggplot +
-  geom_point(aes(x = water_year, y = sdoy_fit), color = "black") +
-  geom_point(data = ref_clean, aes(x = water_year, y = sdoy, color = event)) +
+  geom_point(aes(x = water_year, y = sdoy_fit), color = "black", size = 5) +
+  geom_point(data = ref_clean %>% filter(lakename %in% c('Albion', 'Morskie_Oko')), aes(x = water_year, y = sdoy, color = event), size = 5) +
   facet_wrap(~lakename) +
-  theme_bw()
+  theme_bw()+
+  ylab('Day of Year')+
+  xlab('Water Year')+
+  theme(
+    text = element_text(size = 25)
+  )
+
+#ggsave(here('output/figs_for_JASM/comparison_2.png'), dpi = 500, width = 15, height = 10)
 
 merged_pdates = pdates %>% 
   inner_join(ref_clean, by = c("lakename", "water_year", "event")) %>% 
@@ -208,7 +223,13 @@ merged_pdates %>%
   labs(x = "Days since 8/1 from MODIS",
        y = "Days since 8/1 from in situ",
        color = "Lake name" #,
-       ) #pch = "Lake name"
+       ) + #pch = "Lake name"
+  theme(
+    text = element_text(size = 25),
+    legend.position = 'none'
+  )
+
+#ggsave(here('output/figs_for_JASM/one_one_plt.png'), dpi = 500, height = 7, width = 10)
 
 validation = merged_pdates %>% 
   ggplot(aes(x = sdoy_fit, y = sdoy, color = lakename)) + #pch = lakename, 

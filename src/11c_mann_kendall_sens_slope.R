@@ -74,6 +74,7 @@ mk_sen_test %>% count(Hylak_id) #filtering out any lakes with fewer than 20 rows
 
 mk_sen_test_pos_ice_on <- mk_sen_test %>%
   filter(event == 'ice_on',
+         p.value <= 0.05,
          sen > 0) %>%  
   summarise(max = max(sen),
             min = min(sen),
@@ -84,6 +85,7 @@ mk_sen_test_pos_ice_on <- mk_sen_test %>%
 
 mk_sen_test_neg_ice_on <- mk_sen_test %>%
   filter(event == 'ice_on',
+         p.value <= 0.05,
          sen < 0) %>%  
   summarise(max = max(sen),
             min = min(sen),
@@ -115,9 +117,7 @@ mk_sen_test_neg_ice_off <- mk_sen_test %>%
             mean_ice_off_relative_slope = mean(rel_slope)) #mean rel_slope = -0.00166, max = -0.0278, min = -2
 
 mk_sen_test_ice_off_no_trend <- mk_sen_test %>%
-  filter(event == 'ice_off',
-         sen == 0) %>%  
-  summarise(percent_neg = n()/184)
+  filter(sen == 0) #420 lakes have n
 
 # 3. ICE DURATION---------------------------------------------------------------  
 
@@ -228,26 +228,29 @@ rs_results_tbl_ice_on <- read_csv(here('data/n_american_ice_phenology/results/rs
 # Join results table with ice on plotting data
 
 ice_on_trend_plotting_data <- trend_plotting_data %>%  #2384 lakes with 20 years of ice off data
-  filter(event == 'ice_on') %>% 
+  filter(event == 'ice_on',
+         pour_lat > 35) %>% 
   inner_join(rs_results_tbl_ice_on) %>% 
-  filter(class == 'suitable')                          #727 suitable for ice on
+  filter(class == 'suitable',                          #727 suitable for ice on (30% of total lakes with 20 yrs data)
+         p.value<=0.05)                              #63 with a significant MK p value (~9% of suitable lakes)
 
 # mid <- mean(ice_on_trend_plotting_data$sen)
 mid <- 0
 
 #ice_on_map <- 
-ggplot(data = ice_on_trend_plotting_data) +
+ggplot() +
   ggplot2::geom_sf(data = na) +
   coord_sf(xlim = c(-154, -104), ylim = c(33, 65.5), expand = FALSE)+
-  geom_point(aes(x = pour_long, y = pour_lat, color = sen), size = 5)+
-  scale_colour_gradient2(midpoint = mid, low = 'blue', mid = 'white', high = 'red', space = 'Lab')+
+  geom_point(data = ice_on_trend_plotting_data, aes(x = pour_long, y = pour_lat), size = 3, pch =21, store = 0.5, fill = 'darkgrey')+
+  geom_point(data = ice_on_trend_plotting_data %>% filter(p.value <= 0.05), aes(x = pour_long, y = pour_lat, fill = sen), stroke = 0.5, pch = 21, size = 3)+
+  scale_fill_gradient2(midpoint = mid, low = 'blue', mid = 'white', high = 'red', space = 'Lab')+
   #scale_colour_gradient(low = 'blue', high = 'red', space = 'Lab')+
   xlab("Longitude")+
   ylab("Latitude")+
-  labs(color = 'Ice On Trend \nSlope Magnitude')
+  labs(fill = 'Ice On Trend \nSlope Magnitude')
 
 #save a copy of the ice on plot
-ggsave(here("output/maps/ice_on_map_p.value_2.jpeg"), dpi = 700) #, width = 15, height = 15, units = "in"
+ggsave(here("output/maps/ice_on_map_suitable_p.value_combined.jpeg"), dpi = 700) #, width = 15, height = 15, units = "in"
 
 #ICE OFF plot--------------------------------------------------------------------
 
@@ -263,30 +266,73 @@ rs_results_tbl_ice_off <- read_csv(here('data/n_american_ice_phenology/results/r
 # Join results table with ice off trend plotting data
 
 ice_off_trend_plotting_data <- trend_plotting_data %>%   #1,672 lakes with 20 years of ice off data
-  filter(event == 'ice_off') %>% 
+  filter(event == 'ice_off',
+         pour_lat > 35) %>% 
   inner_join(rs_results_tbl_ice_off) %>% 
-  filter(class == 'suitable')                            #1,545 suitable for ice off
+  filter(class == 'suitable'                            #1,545 suitable for ice off (92% of total lakes with 20 yrs data)
+         )                                #75 with significant MK p value (~5% of suitable lakes)                          
 
 #mid <- mean(ice_off_trend_plotting_data$sen)
 mid <- 0
 
 #ice_on_map <- 
-ggplot(data = ice_off_trend_plotting_data) +
+ggplot() +
   ggplot2::geom_sf(data = na) +
   coord_sf(xlim = c(-154, -104), ylim = c(33, 65.5), expand = FALSE)+
-  geom_point(aes(x = pour_long, y = pour_lat, color = sen), size = 5)+
-  scale_colour_gradient2(midpoint = mid, low = 'red', mid = 'white', high = 'blue', space = 'Lab')+  #found this code here: https://www.datanovia.com/en/blog/ggplot-gradient-color/
+  geom_point(data = ice_off_trend_plotting_data, aes(x = pour_long, y = pour_lat), pch = 21, fill = 'lightgray', stroke = 0.5, size = 1)+
+  geom_point(data = ice_off_trend_plotting_data %>% filter(p.value <= 0.05), aes(x = pour_long, y = pour_lat, fill = sen), stroke = 0.5, pch = 21, size = 1)+
+  scale_fill_gradient2(midpoint = mid, low = 'red', mid = 'white', high = 'blue', space = 'Lab')+  #found this code here: https://www.datanovia.com/en/blog/ggplot-gradient-color/
   #scale_colour_gradient(low = 'red', high = 'blue', space = 'Lab')+
   #geom_point(aes(x = pour_long, y = pour_lat, fill = sen), pch = 21, size = 4, stroke = 0.5)+
   #scale_fill_gradient2(midpoint = mid, low = 'red', mid = 'white', high = 'blue', space = 'Lab')+
   xlab("Longitude")+
   ylab("Latitude")+
-  labs(color = 'Ice Off Trend \nSlope Magnitude')
+  labs(fill = 'Ice Off Trend \nSlope Magnitude')
 
 #coord_sf(xlim = c(-102.15, -74.12), ylim = c(7.65, 33.97), expand = FALSE)
 
 #save a copy of the ice on plot
-ggsave(here("output/maps/ice_off_map_p.value.jpeg"), dpi = 700) #, width = 15, height = 15, units = "in"
+ggsave(here("output/maps/ice_off_map_suitable_p.value_combined.jpeg"), dpi = 700) #, width = 15, height = 15, units = "in"
+
+
+# Looking at lakes with large positive or negative trends-----------------------
+
+# Ice on trends with large magnitude
+
+inspect_large_trends_on <- n_american_lakes_1 %>% 
+  na.omit() %>% 
+  group_by(Hylak_id, event) %>% 
+  filter(elevation >= 1500,
+         n() >= 20,
+         event =='ice_on') %>% 
+  inner_join(ice_on_trend_plotting_data)
+
+inspect_large_trends_on %>% 
+  filter(sen <= -1) %>%
+  filter(p.value <= 0.05) %>% 
+  ggplot()+
+  geom_point(aes(x = water_year, y = sdoy_fit, size = elevation, color = pour_lat))+
+  facet_wrap(~Hylak_id)
+
+# Ice off trends with large magnitude
+
+inspect_large_trends_off <- n_american_lakes_1 %>% 
+  na.omit() %>% 
+  group_by(Hylak_id, event) %>% 
+  filter(elevation >= 1500,
+         n() >= 20,
+         event =='ice_off') %>% 
+  inner_join(ice_off_trend_plotting_data)
+
+
+inspect_large_trends_off %>% 
+  filter(sen >= 0) %>% 
+  #filter(p.value <= 0.05) %>% 
+  ggplot()+
+  geom_point(aes(x = water_year, y = sdoy_fit, size = elevation, color = pour_lat))+
+  facet_wrap(~Hylak_id)
+
+ggsave(here('output/figs_for_JASM/ice_off_large_pos_trends.png'), dpi = 500)
 
 
 
@@ -301,12 +347,21 @@ ggsave(here("output/maps/ice_off_map_p.value.jpeg"), dpi = 700) #, width = 15, h
 
 
 
+ice_off_sig_summary <- trend_plotting_data %>%  #2384 lakes with 20 years of ice off data
+  filter(event == 'ice_off',
+         pour_lat > 35) %>% 
+  inner_join(rs_results_tbl_ice_off) %>% 
+  filter(class == 'suitable',                          #727 suitable for ice on (30% of total lakes with 20 yrs data)
+         p.value<=0.05,
+         sen>0) %>% 
+  summarise(mean = mean(sen),
+            max = max(sen),
+            min = min(sen),
+            median = median(sen)
+            )
 
 
-
-
-
-
+ice_on_sig_summary %>% filter(sen<0)
 
 
 
